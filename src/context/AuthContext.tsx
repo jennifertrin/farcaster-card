@@ -34,6 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       await sdk.actions.ready();
       const { token } = await sdk.actions.quickAuth();
+
+      console.log('token', token);
       
       if (!token) {
         throw new Error('No token received');

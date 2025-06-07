@@ -48,7 +48,7 @@ export default function Home() {
   return (
     <PageLayout>
       <VirtualCard
-        membershipId={authData.sub.toString()}
+        membershipId={authData?.sub?.toString()}
         profilePicture="/placeholder-profile.png"
       />
     </PageLayout>
