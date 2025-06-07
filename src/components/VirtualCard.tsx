@@ -162,13 +162,13 @@ export default function VirtualCard({
                     {/* Photo section */}
                     <div className="w-20 h-24 bg-gray-300 rounded overflow-hidden flex items-center justify-center">
                       {displayProfilePicture ? (
-                        <Image
+                       <Image
                           src={displayProfilePicture}
                           alt="Member Photo"
                           width={80}
                           height={96}
                           objectFit="cover"
-                          className="w-full h-full"
+                          className="rounded w-[80px] h-[96px]"
                         />
                       ) : (
                         // Default silhouette
