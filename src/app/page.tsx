@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import VirtualCard from "@/components/VirtualCard";
@@ -35,23 +35,19 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchUserContext = async () => {
-      try {
-        const context = await sdk.context;
-        setUser(context.user);
-      } catch (error) {
-        console.error('Error fetching user context:', error);
-        setUser({ error: true });
-      }
-    };
-    fetchUserContext();
+    const context = sdk.context;
+    if (context?.user) {
+      setUser(context.user);
+    } else {
+      console.warn('User context not available. Are you running inside Warpcast?');
+      setUser({ error: true });
+    }
   }, []);
 
   if (!user) {
     return <LoadingState message="Loading your membership card..." />;
   }
 
-  // Handle error state
   if (user.error) {
     return (
       <PageLayout>
@@ -70,7 +66,7 @@ export default function Home() {
       <VirtualCard
         membershipId={user.fid?.toString() || 'unknown'}
         profilePicture={user.pfpUrl || "/placeholder-profile.png"}
-        memberName={user.username || user.displayName}
+        memberName={user.username || user.displayName || "Unnamed User"}
       />
     </PageLayout>
   );
