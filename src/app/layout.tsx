@@ -21,7 +21,6 @@ export const metadata: Metadata = {
     images: [process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png"],
   },
   other: {
-    // Main frame configuration as stringified JSON
     "fc:frame": JSON.stringify({
       version: "next",
       imageUrl: process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",

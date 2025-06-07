@@ -1,0 +1,25 @@
+{
+    "frame": {
+      "version": "1",
+      "name": "Farcaster Pro Membership Card",
+      "description": "Farcaster Pro Membership Card",
+      "iconUrl": "https://farcard.xyz/FarcasterPro.png",
+      "homeUrl": "https://farcard.xyz",
+      "imageUrl": "https://farcard.xyz/FarcasterPro.png",
+      "buttonTitle": "Launch Membership Card",
+      "splashImageUrl": "https://farcard.xyz/FarcasterPro.png",
+      "splashBackgroundColor": "#f5f0ec",
+      "requiredChains": [
+        "eip155:8453"
+      ],
+      "ogTitle": "Farcaster Pro Membership Card",
+      "ogDescription": "Farcaster Pro Membership Card",
+      "ogImageUrl": "https://farcard.xyz/FarcasterPro.png",
+      "primaryCategory": "social",
+      "tags": [ 
+        "farcaster",
+        "membership",
+        "card"
+      ]
+    }
+  }
