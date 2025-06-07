@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useAuth } from '@/context/AuthContext';
 
 interface UserData {
   membershipId: string;
@@ -31,26 +30,6 @@ export default function VirtualCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const { authData } = useAuth();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (authData?.sub && !error) {
-        try {
-          const response = await fetch(`/api/user/${authData.sub}`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-          }
-          const data = await response.json();
-          setUserData(data);
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      }
-    };
-
-    fetchUserData();
-  }, [authData?.sub, error]);
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -178,11 +157,6 @@ export default function VirtualCard({
                     {username && (
                       <div className="text-sm text-purple-600 mt-1">
                         {username}
-                      </div>
-                    )}
-                    {authData?.address && (
-                      <div className="text-xs text-gray-600 mt-1">
-                        {authData.address.slice(0, 6)}...{authData.address.slice(-4)}
                       </div>
                     )}
                     {userData?.bio && (
