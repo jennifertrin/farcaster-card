@@ -49,6 +49,12 @@ export default function VirtualCard({
     setShowHint(false); // Hide hint once user interacts
   };
 
+  const handleBarcodeClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card flip when clicking barcode
+    const profileUrl = `https://www.farcaster.xyz/${memberName}`;
+    window.open(profileUrl, '_blank');
+  };
+
   const displayMembershipId =  membershipId;
   const displayProfilePicture = profilePicture;
   const displayName = memberName;
@@ -103,9 +109,7 @@ export default function VirtualCard({
                   </div>
                   <h2 className="text-lg font-semibold text-gray-800 mb-2">Connect to Farcaster</h2>
                   <p className="text-gray-600 text-base mb-1">
-                  <p className="text-gray-600 text-base mb-1">
                     You&apos;re not logged into Farcaster
-                  </p>
                   </p>
                   <p className="text-gray-500 text-sm">
                     Sign in to access your membership details
@@ -144,10 +148,14 @@ export default function VirtualCard({
 
                   {/* Bottom section with barcode and photo */}
                   <div className="flex-1 flex items-end justify-between">
-                    {/* Barcode section */}
+                    {/* Barcode section - now clickable */}
                     <div className="flex flex-col">
-                      {/* Barcode lines */}
-                      <div className="flex items-end space-x-0.5 mb-2 w-48">
+                      {/* Clickable barcode lines */}
+                      <div 
+                        className="flex items-end space-x-0.5 mb-2 w-48 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={handleBarcodeClick}
+                        title={`Visit ${displayName}'s profile`}
+                      >
                         {Array.from({ length: 35 }, (_, i) => (
                           <div
                             key={i}
@@ -156,6 +164,10 @@ export default function VirtualCard({
                             } w-0.5`}
                           />
                         ))}
+                      </div>
+                      {/* URL text below barcode */}
+                      <div className="text-xs text-gray-500 mt-1">
+                        farcaster.xyz/{displayName}
                       </div>
                     </div>
 

@@ -14,8 +14,9 @@ const config: Config = {
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       fontFamily: {
-        'oswald': ['Oswald', 'sans-serif'],
-      }
+        'league-spartan': ['League Spartan', 'sans-serif'],
+        'sans': ['League Spartan', 'ui-sans-serif', 'system-ui'],
+      },
     },
   },
   plugins: [],
