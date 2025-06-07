@@ -3,17 +3,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
-interface UserData {
-  membershipId: string;
-  profilePicture: string;
-  displayName: string;
-  username: string;
-  bio: string;
-  membershipType: string;
-  joinDate: string;
-  isActive: boolean;
-}
-
 interface VirtualCardProps {
   membershipId: string;
   profilePicture: string;
@@ -29,7 +18,6 @@ export default function VirtualCard({
 }: VirtualCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -61,11 +49,9 @@ export default function VirtualCard({
     setShowHint(false); // Hide hint once user interacts
   };
 
-  // Use userData if available, otherwise fall back to props
-  const displayMembershipId = userData?.membershipId || membershipId;
-  const displayProfilePicture = userData?.profilePicture || defaultProfilePicture;
-  const displayName = userData?.displayName || memberName;
-  const username = userData?.username ? `@${userData.username}` : null;
+  const displayMembershipId =  membershipId;
+  const displayProfilePicture = defaultProfilePicture;
+  const displayName = memberName;
 
   return (
     <div className="relative">
@@ -154,16 +140,6 @@ export default function VirtualCard({
                     <div className="text-lg font-bold text-black uppercase tracking-wide">
                       {displayName}
                     </div>
-                    {username && (
-                      <div className="text-sm text-purple-600 mt-1">
-                        {username}
-                      </div>
-                    )}
-                    {userData?.bio && (
-                      <div className="text-xs text-gray-600 mt-2 line-clamp-2">
-                        {userData.bio}
-                      </div>
-                    )}
                   </div>
 
                   {/* Bottom section with barcode and photo */}
@@ -180,9 +156,6 @@ export default function VirtualCard({
                             } w-0.5`}
                           />
                         ))}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {userData?.joinDate ? new Date(userData.joinDate).toLocaleDateString() : '11/2024'}
                       </div>
                     </div>
 

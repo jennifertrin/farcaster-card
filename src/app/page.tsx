@@ -4,7 +4,35 @@ import { useState, useEffect } from "react";
 import VirtualCard from "@/components/VirtualCard";
 import { sdk } from '@farcaster/frame-sdk'
 
-// Add the FrameContext type definition
+// Define proper types for location and client properties
+interface SafeAreaInsets {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
+interface NotificationDetails {
+  token?: string;
+  enabled: boolean;
+  url?: string;
+}
+
+interface Location {
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  [key: string]: unknown; // For any additional location properties
+}
+
+interface ClientInfo {
+  clientFid: number;
+  added: boolean;
+  safeAreaInsets?: SafeAreaInsets;
+  notificationDetails?: NotificationDetails;
+}
+
+// Updated FrameContext type definition with proper types
 type FrameContext = {
   user: {
     fid: number;
@@ -12,13 +40,8 @@ type FrameContext = {
     displayName?: string;
     pfpUrl?: string;
   };
-  location?: any;
-  client: {
-    clientFid: number;
-    added: boolean;
-    safeAreaInsets?: any;
-    notificationDetails?: any;
-  };
+  location?: Location;
+  client: ClientInfo;
 };
 
 interface User {
