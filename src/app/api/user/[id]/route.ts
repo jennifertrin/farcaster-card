@@ -53,10 +53,12 @@ async function getFarcasterUserData(fid: number) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const fid = parseInt(params.id, 10);
+    const resolvedParams = await params;
+    const fid = parseInt(resolvedParams.id, 10);
+    
     if (isNaN(fid)) {
       return NextResponse.json(
         { error: 'Invalid FID' },
@@ -69,8 +71,8 @@ export async function GET(
 
     // Combine with our membership data
     const userData = {
-      membershipId: params.id,
-      profilePicture: farcasterData.pfp || `/api/user/${params.id}/avatar`,
+      membershipId: resolvedParams.id,
+      profilePicture: farcasterData.pfp || `/api/user/${resolvedParams.id}/avatar`,
       displayName: farcasterData.displayName || 'Farcaster User',
       username: farcasterData.username,
       bio: farcasterData.bio,
@@ -87,4 +89,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
