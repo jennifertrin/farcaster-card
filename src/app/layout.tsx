@@ -13,10 +13,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Farcaster Membership Card",
-  description: "Farcaster Membership Card",
+  title: "Farcaster Pro Membership Card",
+  description: "Farcaster Pro Membership Card",
+  openGraph: {
+    title: "Farcaster Pro Membership Card",
+    description: "Farcaster Pro Membership Card",
+    images: [process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png"],
+  },
+  other: {
+    // Main frame configuration as stringified JSON
+    "fc:frame": JSON.stringify({
+      version: "next",
+      imageUrl: process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
+      button: {
+        title: "Launch Membership Card",
+        action: {
+          type: "launch_frame",
+          name: "Farcaster Pro Membership Card",
+          url: "https://farcard.xyz"
+        }
+      }
+    }),
+    
+    // Individual frame meta tags (for compatibility)
+    "fc:frame:image": process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
+    "fc:frame:button:1": "Launch Membership Card",
+    "fc:frame:button:1:action": "launch_frame",
+    
+    // Ensure og:image is also set
+    "og:image": process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
+  },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
