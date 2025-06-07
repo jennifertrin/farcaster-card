@@ -72,13 +72,10 @@ export async function GET(
     // Combine with our membership data
     const userData = {
       membershipId: resolvedParams.id,
-      profilePicture: farcasterData.pfp || `/api/user/${resolvedParams.id}/avatar`,
+      profilePicture: farcasterData.pfp || `/placeholder-profile.png`,
       displayName: farcasterData.displayName || 'Farcaster User',
       username: farcasterData.username,
-      bio: farcasterData.bio,
-      membershipType: 'Pro',
-      joinDate: new Date().toISOString(),
-      isActive: true
+      bio: farcasterData.bio
     };
 
     return NextResponse.json(userData);
