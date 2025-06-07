@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   other: {
     "fc:frame": JSON.stringify({
-      version: "next",
+      version: "vNext",
       imageUrl: process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
       button: {
         title: "Launch Membership Card",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     // Individual frame meta tags (for compatibility)
     "fc:frame:image": process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
     "fc:frame:button:1": "Launch Membership Card",
-    "fc:frame:button:1:action": "launch_frame",
+    "fc:frame:button:1:action": "link",
     
     // Ensure og:image is also set
     "og:image": process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
