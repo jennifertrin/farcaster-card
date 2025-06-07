@@ -46,10 +46,54 @@ const ErrorState = ({ message }: { message: string }) => (
   </PageLayout>
 );
 
+// Access Denied Component
+const AccessDeniedState = ({ fid }: { fid?: number }) => (
+  <PageLayout>
+    <div className="text-center space-y-4">
+      <div className="text-xl text-red-600 font-semibold">
+        Access Denied
+      </div>
+      <div className="text-gray-700 max-w-md">
+        Sorry, your FID {fid ? `(${fid})` : ''} is not authorized to view the Pro Membership Card. 
+        Only verified Pro members can access this feature.
+      </div>
+      <div className="text-sm text-gray-500">
+        If you believe this is an error, please contact support.
+      </div>
+    </div>
+  </PageLayout>
+);
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isValidatingFid, setIsValidatingFid] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authorizedFids, setAuthorizedFids] = useState<Set<number>>(new Set());
+
+  // Load authorized FIDs from API endpoint
+  useEffect(() => {
+    const loadAuthorizedFids = async () => {
+      try {
+        const response = await fetch('/api/authorized-fids');
+        if (!response.ok) {
+          throw new Error('Failed to fetch authorized FIDs');
+        }
+        
+        const data = await response.json();
+        const fids = new Set<number>(data.fids);
+        
+        setAuthorizedFids(fids);
+        console.log(`Loaded ${fids.size} authorized FIDs`);
+      } catch (err) {
+        console.error('Failed to load authorized FIDs:', err);
+        setError('Failed to load membership data. Please try again.');
+      }
+    };
+
+    loadAuthorizedFids();
+  }, []);
 
   useEffect(() => {
     const initializeSDK = async () => {
@@ -64,6 +108,18 @@ export default function Home() {
         
         if (context?.user) {
           setUser(context.user);
+          
+          // Validate FID authorization
+          setIsValidatingFid(true);
+          const userFid = context.user.fid;
+          
+          if (userFid && authorizedFids.has(userFid)) {
+            setIsAuthorized(true);
+          } else {
+            setIsAuthorized(false);
+          }
+          
+          setIsValidatingFid(false);
         } else {
           console.warn('User context not available. Are you running inside Warpcast?');
           setError('User context not available. Please make sure you are running this inside Warpcast.');
@@ -76,10 +132,10 @@ export default function Home() {
       }
     };
 
-    // Check if we're in a Farcaster context
-    if (typeof window !== 'undefined') {
+    // Only initialize SDK after authorized FIDs are loaded
+    if (authorizedFids.size > 0 && typeof window !== 'undefined') {
       initializeSDK();
-    } else {
+    } else if (typeof window === 'undefined') {
       // Server-side rendering fallback
       setIsLoading(false);
       setError('This component requires a browser environment.');
@@ -89,11 +145,15 @@ export default function Home() {
     return () => {
       // Add any cleanup if needed
     };
-  }, []);
+  }, [authorizedFids]);
 
   // Handle different loading states
-  if (isLoading) {
-    return <LoadingState message="Loading your membership card..." />;
+  if (isLoading || authorizedFids.size === 0) {
+    return <LoadingState message="Loading membership data..." />;
+  }
+
+  if (isValidatingFid) {
+    return <LoadingState message="Validating your membership..." />;
   }
 
   if (error) {
@@ -104,7 +164,12 @@ export default function Home() {
     return <ErrorState message="Unable to load user data. Please try refreshing." />;
   }
 
-  // Successful render with user data
+  // Check if user is authorized
+  if (!isAuthorized) {
+    return <AccessDeniedState fid={user.fid} />;
+  }
+
+  // Successful render with user data for authorized members
   return (
     <PageLayout>
       <VirtualCard
