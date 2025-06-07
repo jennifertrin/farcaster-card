@@ -50,6 +50,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  console.log('user', user);
 
   useEffect(() => {
     const initializeSDK = async () => {
