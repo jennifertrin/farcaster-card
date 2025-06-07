@@ -138,7 +138,9 @@ export default function VirtualCard({
                   </div>
                   <h2 className="text-lg font-semibold text-gray-800 mb-2">Connect to Farcaster</h2>
                   <p className="text-gray-600 text-base mb-1">
-                    You're not logged into Farcaster
+                  <p className="text-gray-600 text-base mb-1">
+                    You&apos;re not logged into Farcaster
+                  </p>
                   </p>
                   <p className="text-gray-500 text-sm">
                     Sign in to access your membership details

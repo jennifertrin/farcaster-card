@@ -62,14 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if ('token' in authResult && authResult.token) {
             token = authResult.token as string;
           }
-          // Check if token is nested in a result property
-          else if ('result' in authResult && authResult.result && typeof authResult.result === 'object' && 'token' in authResult.result) {
-            token = (authResult.result as any).token;
-          }
-          // Check other common patterns
-          else if ('data' in authResult && authResult.data && typeof authResult.data === 'object' && 'token' in authResult.data) {
-            token = (authResult.data as any).token;
-          }
+          // // Check if token is nested in a result property
+          // else if ('result' in authResult && authResult.result && typeof authResult.result === 'object' && 'token' in authResult.result) {
+          //   token = (authResult.result as any).token;
+          // }
+          // // Check other common patterns
+          // else if ('data' in authResult && authResult.data && typeof authResult.data === 'object' && 'token' in authResult.data) {
+          //   token = (authResult.data as any).token;
+          // }
           // Check if the entire result is the token
           else if (typeof authResult === 'string') {
             token = authResult;

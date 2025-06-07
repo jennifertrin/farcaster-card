@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSSLHubRpcClient, UserDataType, Message, MessagesResponse } from '@farcaster/hub-nodejs';
+import { getSSLHubRpcClient, UserDataType } from '@farcaster/hub-nodejs';
 
 const hubRpcEndpoint = 'nemes.farcaster.xyz:2283'; // Using a public hub endpoint
 
