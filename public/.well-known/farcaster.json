@@ -1,4 +1,9 @@
 {
+    "accountAssociation": {
+      "header": "eyJmaWQiOjEyMDM0LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4MzBDM2UwZDIxZDQ1NzVGNzE3RDU5RkM1QkQxMDIxRDk2RGU5RWQ0RiJ9",
+      "payload": "eyJkb21haW4iOiJmYXJjYXJkLnh5eiJ9",
+      "signature": "MHg3MjJkNTVlYjdiOWI5Y2E4NjA1YWJjOWIxMDkyN2VmYzhkYzQ2NjRmMjk2ZDFkYmRmOWM0YmJiMzRkNDY2ZWNjNTY1M2FjMjVjN2M0NzRiNThlNDBjMjk1ZmUxZDZlZWM5NDk0YTg0NWY1Y2EyZTNhOTM2N2M4MmQzZTc1NmY5ZTFi"
+    },
     "frame": {
       "version": "1",
       "name": "Farcaster Pro Membership Card",
