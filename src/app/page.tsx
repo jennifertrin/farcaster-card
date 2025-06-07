@@ -1,64 +1,18 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react';
 import VirtualCard from "@/components/VirtualCard";
-import { sdk } from '@farcaster/frame-sdk'
-
-// Define proper types for location and client properties
-interface SafeAreaInsets {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}
-
-interface NotificationDetails {
-  token?: string;
-  enabled: boolean;
-  url?: string;
-}
-
-interface Location {
-  latitude?: number;
-  longitude?: number;
-  address?: string;
-  [key: string]: unknown; // For any additional location properties
-}
-
-interface ClientInfo {
-  clientFid: number;
-  added: boolean;
-  safeAreaInsets?: SafeAreaInsets;
-  notificationDetails?: NotificationDetails;
-}
-
-// Updated FrameContext type definition with proper types
-type FrameContext = {
-  user: {
-    fid: number;
-    username?: string;
-    displayName?: string;
-    pfpUrl?: string;
-  };
-  location?: Location;
-  client: ClientInfo;
-};
+import { sdk } from '@farcaster/frame-sdk';
 
 interface User {
   fid?: number;
   username?: string;
   displayName?: string;
-  pfp?: {
-    url?: string;
-  };
+  pfpUrl?: string;
+  error?: boolean;
 }
 
-interface AuthData {
-  sub: string | number;
-  user?: User;
-}
-
-// Separate PageLayout component for better organization
+// Page Layout Component
 const PageLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="flex min-h-screen flex-col items-center justify-center p-8 font-oswald bg-[#f3f0fa]">
     <main className="flex flex-col items-center gap-8">
@@ -70,7 +24,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-// Loading component
+// Loading Component
 const LoadingState = ({ message }: { message: string }) => (
   <PageLayout>
     <div className="text-lg text-gray-600 animate-pulse">{message}</div>
@@ -78,102 +32,45 @@ const LoadingState = ({ message }: { message: string }) => (
 );
 
 export default function Home() {
-  const [authData, setAuthData] = useState<AuthData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [context, setContext] = useState<FrameContext | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const fetchUserContext = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        // Check if SDK is available
-        if (!sdk || !sdk.context) {
-          throw new Error("Farcaster SDK not available");
-        }
-
-        // Await the context promise
-        const frameContext = await sdk.context as FrameContext;
-        console.log('Frame context:', frameContext); // Debug log
-        
-        // Check if frameContext exists
-        if (!frameContext) {
-          throw new Error("Frame context is undefined");
-        }
-
-        setContext(frameContext);
-
-        // Safe destructuring with fallback
-        const user = frameContext.user || null;
-
-        if (user) {
-          setAuthData({
-            sub: user.fid || user.username || 'unknown',
-            user: user
-          });
-        } else {
-          // Handle case where user is not available
-          setError("Unable to load user data - no user in context");
-        }
-      } catch (err) {
-        console.error('Authentication error:', err);
-        setError(err instanceof Error ? err.message : "Authentication failed");
-      } finally {
-        setIsLoading(false);
+        const context = await sdk.context;
+        setUser(context.user);
+      } catch (error) {
+        console.error('Error fetching user context:', error);
+        setUser({ error: true });
       }
     };
-
-    initializeAuth();
+    fetchUserContext();
   }, []);
 
-  // Early return for loading state
-  if (!context || isLoading) {
+  if (!user) {
     return <LoadingState message="Loading your membership card..." />;
   }
 
-  // Early return for error state
-  if (error) {
+  // Handle error state
+  if (user.error) {
     return (
       <PageLayout>
         <VirtualCard
           membershipId="error"
           profilePicture="/placeholder-profile.png"
-          memberName={'Member'}
+          memberName="Member"
           error={true}
         />
       </PageLayout>
     );
   }
 
-  // Early return for no auth data
-  if (!authData) {
-    return <LoadingState message="Initializing membership card..." />;
-  }
-
-  // Get profile picture URL with fallback
-  const getProfilePicture = (): string => {
-    if (authData.user?.pfp?.url) {
-      return authData.user.pfp.url;
-    }
-    return "/placeholder-profile.png";
-  };
-
-  // Get membership ID with proper formatting
-  const getMembershipId = (): string => {
-    if (typeof authData.sub === 'number') {
-      return authData.sub.toString();
-    }
-    return authData.sub || 'unknown';
-  };
-
   return (
     <PageLayout>
       <VirtualCard
-        membershipId={getMembershipId()}
-        profilePicture={getProfilePicture()}
-        memberName={authData.user?.username}
+        membershipId={user.fid?.toString() || 'unknown'}
+        profilePicture={user.pfpUrl || "/placeholder-profile.png"}
+        memberName={user.username || user.displayName}
       />
     </PageLayout>
   );
