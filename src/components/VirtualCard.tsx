@@ -166,10 +166,10 @@ export default function VirtualCard({
                           src={displayProfilePicture}
                           alt="Member Photo"
                           width={80}
-                          height={96}
-                          objectFit="cover"
-                          className="rounded w-[80px] h-[96px]"
-                        />
+                          height={80}
+                          className="rounded-sm object-cover"
+                     />
+                     
                       ) : (
                         // Default silhouette
                         <div className="w-full h-full bg-gray-400 flex items-center justify-center">
