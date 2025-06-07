@@ -61,7 +61,6 @@ export default function Home() {
         await new Promise(resolve => setTimeout(resolve, 100));
         
         const context = await sdk.context;
-        console.log(context);
         
         if (context?.user) {
           setUser(context.user);
