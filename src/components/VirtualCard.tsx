@@ -12,7 +12,7 @@ interface VirtualCardProps {
 
 export default function VirtualCard({ 
   membershipId,
-  profilePicture: defaultProfilePicture,
+  profilePicture ='/placeholder-profile.png',
   memberName = "Member",
   error = false
 }: VirtualCardProps) {
@@ -50,7 +50,7 @@ export default function VirtualCard({
   };
 
   const displayMembershipId =  membershipId;
-  const displayProfilePicture = defaultProfilePicture;
+  const displayProfilePicture = profilePicture;
   const displayName = memberName;
 
   return (
