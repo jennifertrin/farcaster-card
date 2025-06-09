@@ -6,7 +6,6 @@ interface CompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
   format?: 'png' | 'jpeg' | 'webp';
-  enableProgressiveJPEG?: boolean;
 }
 
 // Create static card components for image generation (no animations/transforms)
@@ -141,8 +140,7 @@ async function compressCanvas(
     quality = 0.8,
     maxWidth = 800,
     maxHeight = 800,
-    format = 'jpeg',
-    enableProgressiveJPEG = true
+    format = 'jpeg'
   } = options;
 
   // Create a new canvas for compression
