@@ -77,20 +77,14 @@ export default function VirtualCard({
           format: 'png'
         }
       );
-      
-      // Method 2: Alternative - use improved state-based approach
-      // const imageDataUrl = await generateCombinedCardImageWithStatesImproved(
-      //   cardRef,
-      //   () => setIsFlipped(true),   // showBackState
-      //   () => setIsFlipped(false),  // showFrontState  
-      //   () => setIsFlipped(false),  // resetState
-      //   700 // animation duration
-      // );
 
-      // Cast the image using Farcaster SDK
+      // Get the base URL from the environment variable or default to window.location.origin
+      const baseUrl = process.env.NEXT_PUBLIC_HOST || window.location.origin;
+      
+      // Cast the image using Farcaster SDK - use a proper URL instead of data URL
       await sdk.actions.composeCast({
-        text: `Why need a Costco Membership Card when you can have a Farcaster Pro Membership Card?\n💜 Member Name: ${memberName} \nMember #${membershipId}`,
-        embeds: [imageDataUrl],
+        text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card?\n💜 Member Name: ${memberName} \nMember #${membershipId}`,
+        embeds: [`${baseUrl}/FarcasterPro.png`], // Use the static image URL instead
       });
       
     } catch (error) {
