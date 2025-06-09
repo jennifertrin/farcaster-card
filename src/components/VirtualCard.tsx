@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { generateCombinedCardImageWithStates } from '@/utils/cardImage';
+import { 
+  generateCombinedCardImageStatic
+} from '@/utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -21,7 +23,7 @@ export default function VirtualCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const cardRef = useRef<HTMLDivElement | null  >(null);  
+  const cardRef = useRef<HTMLDivElement | null>(null);  
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -46,7 +48,7 @@ export default function VirtualCard({
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [error]); // Include error in dependency array
+  }, [error]);
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
@@ -63,15 +65,21 @@ export default function VirtualCard({
     try {
       setIsSharing(true);
       
-      // Generate the combined card image using state-based approach
-      const imageDataUrl = await generateCombinedCardImageWithStates(
-        cardRef,
-        () => setIsFlipped(true),   // showBackState
-        () => setIsFlipped(false),  // showFrontState  
-        () => setIsFlipped(false)   // resetState
+      // Method 1: Use static generation (recommended - more reliable)
+      const imageDataUrl = await generateCombinedCardImageStatic(
+        membershipId,
+        profilePicture,
+        memberName
       );
-
-      console.log('imageDataUrl', imageDataUrl);
+      
+      // Method 2: Alternative - use improved state-based approach
+      // const imageDataUrl = await generateCombinedCardImageWithStatesImproved(
+      //   cardRef,
+      //   () => setIsFlipped(true),   // showBackState
+      //   () => setIsFlipped(false),  // showFrontState  
+      //   () => setIsFlipped(false),  // resetState
+      //   700 // animation duration
+      // );
       
       // Cast the image using Farcaster SDK
       await sdk.actions.composeCast({
@@ -87,7 +95,7 @@ export default function VirtualCard({
     }
   };
 
-  const displayMembershipId =  membershipId;
+  const displayMembershipId = membershipId;
   const displayProfilePicture = profilePicture;
   const displayName = memberName;
 
