@@ -466,7 +466,7 @@ export async function downloadCardImage(
   filename: string = 'card-image.png'
 ): Promise<void> {
   try {
-    let downloadURL = imageURL;
+    const downloadURL = imageURL;
     
     // If it's an object URL, we can use it directly
     // If it's a data URL, we can also use it directly
