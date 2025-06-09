@@ -17,6 +17,9 @@
       "requiredChains": [
         "eip155:8453"
       ],
+      "requiredCapabilities": [
+        "actions.composeCast"
+      ],
       "ogTitle": "Farcaster Pro Membership Card",
       "ogDescription": "Farcaster Pro Membership Card",
       "ogImageUrl": "https://farcard.xyz/FarcasterPro.png",

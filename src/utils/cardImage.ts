@@ -1,8 +1,8 @@
 import html2canvas from 'html2canvas';
 
 export async function generateCombinedCardImage(
-  frontCardRef: React.RefObject<HTMLDivElement>,
-  backCardRef: React.RefObject<HTMLDivElement>
+  frontCardRef: React.RefObject<HTMLDivElement | null>,
+  backCardRef: React.RefObject<HTMLDivElement | null>
 ): Promise<string> {
   if (!frontCardRef.current || !backCardRef.current) {
     throw new Error('Card elements not found');
@@ -13,20 +13,16 @@ export async function generateCombinedCardImage(
     const frontCanvas = await html2canvas(frontCardRef.current, {
       width: 400,
       height: 250,
-      scale: 2.56, // Scale up to get 1024px width (400 * 2.56 = 1024)
       useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
+      allowTaint: true
     });
 
     // Create canvas for back of card
     const backCanvas = await html2canvas(backCardRef.current, {
       width: 400,
       height: 250,
-      scale: 2.56,
       useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
+      allowTaint: true
     });
 
     // Create final canvas with both front and back
@@ -69,7 +65,7 @@ export async function generateSingleCardImage(
   options: {
     width?: number;
     height?: number;
-    scale?: number;
+    dpi?: number;
     format?: 'png' | 'jpeg';
     quality?: number;
   } = {}
@@ -81,7 +77,6 @@ export async function generateSingleCardImage(
   const {
     width = 400,
     height = 250,
-    scale = 2.56,
     format = 'png',
     quality = 0.92
   } = options;
@@ -90,10 +85,8 @@ export async function generateSingleCardImage(
     const canvas = await html2canvas(cardRef.current, {
       width,
       height,
-      scale,
       useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
+      allowTaint: true
     });
 
     const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
@@ -149,7 +142,7 @@ export function generateCardImageFilename(
 
 // Alternative approach using separate card states without DOM manipulation
 export async function generateCombinedCardImageWithStates(
-  cardRef: React.RefObject<HTMLDivElement>,
+  cardRef: React.RefObject<HTMLDivElement | null>,
   showBackState: () => void,
   showFrontState: () => void,
   resetState: () => void
@@ -167,10 +160,8 @@ export async function generateCombinedCardImageWithStates(
     const frontCanvas = await html2canvas(cardRef.current, {
       width: 400,
       height: 250,
-      scale: 2.56,
       useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
+      allowTaint: true
     });
 
     // Switch to back state
@@ -181,10 +172,8 @@ export async function generateCombinedCardImageWithStates(
     const backCanvas = await html2canvas(cardRef.current, {
       width: 400,
       height: 250,
-      scale: 2.56,
       useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
+      allowTaint: true
     });
 
     // Reset to original state

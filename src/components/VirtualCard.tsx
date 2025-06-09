@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { generateCombinedCardImage } from '@/utils/cardImage';
+import { generateCombinedCardImageWithStates } from '@/utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -21,7 +21,7 @@ export default function VirtualCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement | null  >(null);  
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -63,8 +63,13 @@ export default function VirtualCard({
     try {
       setIsSharing(true);
       
-      // Generate the combined card image
-      const imageDataUrl = await generateCombinedCardImage(cardRef as React.RefObject<HTMLDivElement>);
+      // Generate the combined card image using state-based approach
+      const imageDataUrl = await generateCombinedCardImageWithStates(
+        cardRef,
+        () => setIsFlipped(true),   // showBackState
+        () => setIsFlipped(false),  // showFrontState  
+        () => setIsFlipped(false)   // resetState
+      );
       
       // Cast the image using Farcaster SDK
       await sdk.actions.composeCast({
