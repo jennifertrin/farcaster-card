@@ -66,17 +66,17 @@ export default function VirtualCard({
       setIsSharing(true);
       
       // Method 1: Use static generation (recommended - more reliable)
-      const imageDataUrl = await generateCombinedCardImageStatic(
-        membershipId,
-        profilePicture,
-        memberName,
-        {
-          quality: 0.9,
-          maxWidth: 1024,
-          maxHeight: 1024,
-          format: 'png'
-        }
-      );
+      // const imageDataUrl = await generateCombinedCardImageStatic(
+      //   membershipId,
+      //   profilePicture,
+      //   memberName,
+      //   {
+      //     quality: 0.9,
+      //     maxWidth: 1024,
+      //     maxHeight: 1024,
+      //     format: 'png'
+      //   }
+      // );
 
       // Get the base URL from the environment variable or default to window.location.origin
       const baseUrl = process.env.NEXT_PUBLIC_HOST || window.location.origin;
