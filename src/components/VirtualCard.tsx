@@ -70,6 +70,8 @@ export default function VirtualCard({
         () => setIsFlipped(false),  // showFrontState  
         () => setIsFlipped(false)   // resetState
       );
+
+      console.log('imageDataUrl', imageDataUrl);
       
       // Cast the image using Farcaster SDK
       await sdk.actions.composeCast({
