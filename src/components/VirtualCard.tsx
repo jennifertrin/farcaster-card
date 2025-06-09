@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
 import { 
-  generateCombinedCardImageStatic
+  generateCombinedCardImageForFarcaster, // Changed from generateCombinedCardImageStatic
+  generateCombinedCardImageStatic // Keep this for local display if needed
 } from '@/utils/cardImage';
 
 interface VirtualCardProps {
@@ -65,7 +66,8 @@ export default function VirtualCard({
     try {
       setIsSharing(true);
       
-      const imageDataUrl = await generateCombinedCardImageStatic(
+      // Use the Farcaster-compatible function that returns a public URL
+      const imageUrl = await generateCombinedCardImageForFarcaster(
         membershipId,
         profilePicture,
         memberName,
@@ -77,16 +79,28 @@ export default function VirtualCard({
         }
       );
 
-      console.log('imageDataUrl', imageDataUrl);
+      console.log('Public image URL:', imageUrl);
 
       await sdk.actions.composeCast({
         text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card?\n💜 Member Name: ${memberName} \nMember #${membershipId}`,
-        embeds: [imageDataUrl]
+        embeds: [imageUrl] // Now this is a proper public URL
       });
       
     } catch (error) {
       console.error('Error sharing card:', error);
-      alert('Failed to share card. Please try again.');
+      
+      // More detailed error handling
+      if (error instanceof Error) {
+        if (error.message.includes('Upload failed')) {
+          alert('Failed to upload image. Please check your internet connection and try again.');
+        } else if (error.message.includes('Failed to generate')) {
+          alert('Failed to generate card image. Please try again.');
+        } else {
+          alert(`Failed to share card: ${error.message}`);
+        }
+      } else {
+        alert('Failed to share card. Please try again.');
+      }
     } finally {
       setIsSharing(false);
     }

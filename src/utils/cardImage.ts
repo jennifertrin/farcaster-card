@@ -131,73 +131,113 @@ async function preloadImage(src: string): Promise<void> {
   });
 }
 
-// MODIFIED: Convert canvas to Blob and create object URL
-async function canvasToObjectURL(
+// Upload canvas to API and get public URL
+async function uploadCanvasToAPI(
   canvas: HTMLCanvasElement,
   options: CompressionOptions = {}
 ): Promise<string> {
   const {
     quality = 0.8,
-    maxWidth = 800,
-    maxHeight = 800,
     format = 'jpeg'
   } = options;
 
-  // Create a new canvas for compression if needed
-  let finalCanvas = canvas;
-  
-  if (canvas.width > maxWidth || canvas.height > maxHeight) {
-    const compressedCanvas = document.createElement('canvas');
-    const ctx = compressedCanvas.getContext('2d');
-    
-    if (!ctx) {
-      throw new Error('Could not get canvas context for compression');
-    }
-
-    // Calculate new dimensions while maintaining aspect ratio
-    let { width, height } = canvas;
-    
-    const aspectRatio = width / height;
-    
-    if (width > height) {
-      width = Math.min(width, maxWidth);
-      height = width / aspectRatio;
-    } else {
-      height = Math.min(height, maxHeight);
-      width = height * aspectRatio;
-    }
-
-    compressedCanvas.width = width;
-    compressedCanvas.height = height;
-
-    // Enable image smoothing for better quality when resizing
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    // Draw the original canvas onto the compressed canvas
-    ctx.drawImage(canvas, 0, 0, width, height);
-    finalCanvas = compressedCanvas;
-  }
-
-  // Convert canvas to Blob
   const mimeType = format === 'png' ? 'image/png' : 
                    format === 'webp' ? 'image/webp' : 'image/jpeg';
 
   return new Promise((resolve, reject) => {
-    finalCanvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (!blob) {
         reject(new Error('Failed to create blob from canvas'));
         return;
       }
       
-      // Create object URL from blob
-      const url = URL.createObjectURL(blob);
-      resolve(url);
+      try {
+        const formData = new FormData();
+        formData.append('image', blob, `card-image.${format}`);
+        
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+        
+        const { url } = await response.json();
+        resolve(url);
+      } catch (error) {
+        reject(error);
+      }
     }, mimeType, quality);
   });
 }
 
-// Compression presets remain the same
+// Convert canvas to compressed canvas (for local use)
+async function compressCanvas(
+  canvas: HTMLCanvasElement,
+  options: CompressionOptions = {}
+): Promise<HTMLCanvasElement> {
+  const {
+    maxWidth = 800,
+    maxHeight = 800
+  } = options;
+
+  // If no compression needed, return original
+  if (canvas.width <= maxWidth && canvas.height <= maxHeight) {
+    return canvas;
+  }
+
+  const compressedCanvas = document.createElement('canvas');
+  const ctx = compressedCanvas.getContext('2d');
+  
+  if (!ctx) {
+    throw new Error('Could not get canvas context for compression');
+  }
+
+  // Calculate new dimensions while maintaining aspect ratio
+  let { width, height } = canvas;
+  const aspectRatio = width / height;
+  
+  if (width > height) {
+    width = Math.min(width, maxWidth);
+    height = width / aspectRatio;
+  } else {
+    height = Math.min(height, maxHeight);
+    width = height * aspectRatio;
+  }
+
+  compressedCanvas.width = width;
+  compressedCanvas.height = height;
+
+  // Enable image smoothing for better quality when resizing
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // Draw the original canvas onto the compressed canvas
+  ctx.drawImage(canvas, 0, 0, width, height);
+  
+  return compressedCanvas;
+}
+
+// Convert canvas to data URL (for local display)
+async function canvasToDataURL(
+  canvas: HTMLCanvasElement,
+  options: CompressionOptions = {}
+): Promise<string> {
+  const {
+    quality = 0.8,
+    format = 'jpeg'
+  } = options;
+
+  const compressedCanvas = await compressCanvas(canvas, options);
+  const mimeType = format === 'png' ? 'image/png' : 
+                   format === 'webp' ? 'image/webp' : 'image/jpeg';
+
+  return compressedCanvas.toDataURL(mimeType, quality);
+}
+
+// Compression presets
 export const COMPRESSION_PRESETS = {
   high: {
     quality: 0.9,
@@ -225,7 +265,112 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// MODIFIED: Main function now returns object URL
+// Main function that returns PUBLIC URL (for Farcaster)
+export async function generateCombinedCardImageForFarcaster(
+  membershipId: string,
+  profilePicture: string,
+  memberName: string,
+  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.medium
+): Promise<string> {
+  let frontElement: HTMLDivElement | null = null;
+  let backElement: HTMLDivElement | null = null;
+
+  try {
+    // Preload images first
+    await Promise.all([
+      preloadImage('/FarcasterPro.png'),
+      preloadImage(profilePicture)
+    ]);
+
+    // Create static elements
+    const { frontElement: front, backElement: back } = createStaticCardElements(
+      membershipId,
+      profilePicture,
+      memberName
+    );
+    
+    frontElement = front;
+    backElement = back;
+
+    // Add to DOM temporarily (positioned off-screen)
+    frontElement.style.position = 'absolute';
+    frontElement.style.left = '-9999px';
+    frontElement.style.top = '-9999px';
+    
+    backElement.style.position = 'absolute';
+    backElement.style.left = '-9999px';
+    backElement.style.top = '-9999px';
+    
+    document.body.appendChild(frontElement);
+    document.body.appendChild(backElement);
+
+    // Wait for elements to render
+    await waitForRender(200);
+
+    // Capture both cards with standard options
+    const [frontCanvas, backCanvas] = await Promise.all([
+      html2canvas(frontElement, {
+        width: 400,
+        height: 250,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      }),
+      html2canvas(backElement, {
+        width: 400,
+        height: 250,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      })
+    ]);
+
+    // Create final combined canvas
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = 1024;
+    finalCanvas.height = 1024;
+    const ctx = finalCanvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+
+    // Set background
+    ctx.fillStyle = '#f5f0ec';
+    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+    // Calculate positioning
+    const cardWidth = 1024;
+    const cardHeight = 640;
+    const spacing = 32;
+    const totalCardsHeight = (cardHeight * 2) + spacing;
+    const startY = (1024 - totalCardsHeight) / 2;
+
+    // Draw both cards with better quality
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
+    ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
+
+    // Upload to API and return public URL
+    return await uploadCanvasToAPI(finalCanvas, compressionOptions);
+
+  } catch (error) {
+    console.error('Error generating combined card image:', error);
+    throw new Error(`Failed to generate card image: ${(error as Error).message}`);
+  } finally {
+    // Clean up DOM elements
+    if (frontElement && frontElement.parentNode) {
+      frontElement.parentNode.removeChild(frontElement);
+    }
+    if (backElement && backElement.parentNode) {
+      backElement.parentNode.removeChild(backElement);
+    }
+  }
+}
+
+// Original function that returns DATA URL (for local display/download)
 export async function generateCombinedCardImageStatic(
   membershipId: string,
   profilePicture: string,
@@ -313,8 +458,8 @@ export async function generateCombinedCardImageStatic(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    // Convert canvas to object URL
-    return await canvasToObjectURL(finalCanvas, compressionOptions);
+    // Convert canvas to data URL
+    return await canvasToDataURL(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
@@ -330,7 +475,7 @@ export async function generateCombinedCardImageStatic(
   }
 }
 
-// MODIFIED: Enhanced version with object URL
+// Enhanced version with states (returns DATA URL)
 export async function generateCombinedCardImageWithStatesImproved(
   cardRef: React.RefObject<HTMLDivElement | null>,
   showBackState: () => void,
@@ -399,8 +544,8 @@ export async function generateCombinedCardImageWithStatesImproved(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    // Convert to object URL
-    return await canvasToObjectURL(finalCanvas, compressionOptions);
+    // Convert to data URL
+    return await canvasToDataURL(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
@@ -409,7 +554,7 @@ export async function generateCombinedCardImageWithStatesImproved(
   }
 }
 
-// MODIFIED: Single card with object URL
+// Single card with data URL
 export async function generateSingleCardImage(
   cardRef: React.RefObject<HTMLDivElement>,
   options: {
@@ -439,41 +584,23 @@ export async function generateSingleCardImage(
       logging: false
     });
 
-    // Convert to object URL
-    return await canvasToObjectURL(canvas, compressionOptions);
+    // Convert to data URL
+    return await canvasToDataURL(canvas, compressionOptions);
   } catch (error) {
     console.error('Error generating single card image:', error);
     throw new Error('Failed to generate card image');
   }
 }
 
-// NEW: Utility function to revoke object URL (important for memory management)
-export function revokeImageURL(url: string): void {
-  if (url.startsWith('blob:')) {
-    URL.revokeObjectURL(url);
-  }
-}
-
-// NEW: Utility function to get blob from object URL
-export async function getImageBlob(url: string): Promise<Blob> {
-  const response = await fetch(url);
-  return response.blob();
-}
-
-// MODIFIED: Download function now works with both data URLs and object URLs
+// Utility functions
 export async function downloadCardImage(
   imageURL: string,
   filename: string = 'card-image.png'
 ): Promise<void> {
   try {
-    const downloadURL = imageURL;
-    
-    // If it's an object URL, we can use it directly
-    // If it's a data URL, we can also use it directly
-    
     const link = document.createElement('a');
     link.download = filename;
-    link.href = downloadURL;
+    link.href = imageURL;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -481,27 +608,6 @@ export async function downloadCardImage(
     console.error('Error downloading card image:', error);
     throw new Error('Failed to download image');
   }
-}
-
-// NEW: Convert object URL back to data URL if needed
-export async function objectURLToDataURL(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Could not get canvas context'));
-        return;
-      }
-      ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL());
-    };
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = url;
-  });
 }
 
 export function generateCardImageFilename(
@@ -528,4 +634,17 @@ export function generateCardImageFilename(
   }
 
   return `${filename}.png`;
+}
+
+// Helper function to convert data URL to blob (if needed)
+export function dataURLToBlob(dataURL: string): Blob {
+  const arr = dataURL.split(',');
+  const mime = arr[0].match(/:(.*?);/)![1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
 }
