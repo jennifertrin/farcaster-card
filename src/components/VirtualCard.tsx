@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { 
-  generateCombinedCardImageStatic
-} from '@/utils/cardImage';
+// import { 
+//   generateCombinedCardImageStatic
+// } from '@/utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
