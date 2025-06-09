@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { sdk } from '@farcaster/frame-sdk';
+import { generateCombinedCardImage } from '@/utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -18,6 +20,8 @@ export default function VirtualCard({
 }: VirtualCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -55,6 +59,27 @@ export default function VirtualCard({
     window.open(profileUrl, '_blank');
   };
 
+  const handleShare = async () => {
+    try {
+      setIsSharing(true);
+      
+      // Generate the combined card image
+      const imageDataUrl = await generateCombinedCardImage(cardRef as React.RefObject<HTMLDivElement>);
+      
+      // Cast the image using Farcaster SDK
+      await sdk.actions.composeCast({
+        text: `My Farcaster Pro Membership Card 💜\nMember #${membershipId}`,
+        embeds: [imageDataUrl],
+      });
+      
+    } catch (error) {
+      console.error('Error sharing card:', error);
+      alert('Failed to share card. Please try again.');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   const displayMembershipId =  membershipId;
   const displayProfilePicture = profilePicture;
   const displayName = memberName;
@@ -62,6 +87,7 @@ export default function VirtualCard({
   return (
     <div className="relative">
       <div 
+        ref={cardRef}
         className="relative w-[400px] h-[250px] cursor-pointer perspective-1000"
         onClick={handleClick}
       >
@@ -204,6 +230,17 @@ export default function VirtualCard({
           </div>
         </div>
       </div>
+      
+      {/* Share button */}
+      {!error && (
+        <button
+          onClick={handleShare}
+          disabled={isSharing}
+          className="mt-4 w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSharing ? 'Sharing...' : 'Share Card'}
+        </button>
+      )}
       
       {/* Interactive hint */}
       {showHint && (

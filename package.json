@@ -11,6 +11,8 @@
   "dependencies": {
     "@farcaster/frame-sdk": "^0.0.60",
     "@farcaster/hub-nodejs": "^0.13.6",
+    "@types/html2canvas": "^0.5.35",
+    "html2canvas": "^1.4.1",
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
