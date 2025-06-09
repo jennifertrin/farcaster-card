@@ -1,5 +1,14 @@
 import html2canvas from 'html2canvas';
 
+// Compression options interface
+interface CompressionOptions {
+  quality?: number; // 0.1 to 1.0
+  maxWidth?: number;
+  maxHeight?: number;
+  format?: 'png' | 'jpeg' | 'webp';
+  enableProgressiveJPEG?: boolean;
+}
+
 // Create static card components for image generation (no animations/transforms)
 export function createStaticCardElements(
   membershipId: string,
@@ -103,7 +112,6 @@ export function createStaticCardElements(
 // Enhanced wait function with multiple strategies
 async function waitForRender(ms: number = 300): Promise<void> {
   return new Promise(resolve => {
-    // Use both requestAnimationFrame and setTimeout for better reliability
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setTimeout(resolve, ms);
@@ -118,19 +126,103 @@ async function preloadImage(src: string): Promise<void> {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve();
-    img.onerror = () => resolve(); // Don't fail on image errors, just continue
+    img.onerror = () => resolve();
     img.src = src;
-    
-    // Timeout after 5 seconds
     setTimeout(() => resolve(), 5000);
   });
 }
 
-// Main function using static elements (recommended approach)
+// NEW: Image compression function
+async function compressCanvas(
+  canvas: HTMLCanvasElement, 
+  options: CompressionOptions = {}
+): Promise<string> {
+  const {
+    quality = 0.8,
+    maxWidth = 800,
+    maxHeight = 800,
+    format = 'jpeg',
+    enableProgressiveJPEG = true
+  } = options;
+
+  // Create a new canvas for compression
+  const compressedCanvas = document.createElement('canvas');
+  const ctx = compressedCanvas.getContext('2d');
+  
+  if (!ctx) {
+    throw new Error('Could not get canvas context for compression');
+  }
+
+  // Calculate new dimensions while maintaining aspect ratio
+  let { width, height } = canvas;
+  
+  if (width > maxWidth || height > maxHeight) {
+    const aspectRatio = width / height;
+    
+    if (width > height) {
+      width = Math.min(width, maxWidth);
+      height = width / aspectRatio;
+    } else {
+      height = Math.min(height, maxHeight);
+      width = height * aspectRatio;
+    }
+  }
+
+  compressedCanvas.width = width;
+  compressedCanvas.height = height;
+
+  // Enable image smoothing for better quality when resizing
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // Draw the original canvas onto the compressed canvas
+  ctx.drawImage(canvas, 0, 0, width, height);
+
+  // Convert to compressed format
+  const mimeType = format === 'png' ? 'image/png' : 
+                   format === 'webp' ? 'image/webp' : 'image/jpeg';
+  
+  return compressedCanvas.toDataURL(mimeType, quality);
+}
+
+// NEW: Multiple compression levels
+export const COMPRESSION_PRESETS = {
+  // High quality, larger file size
+  high: {
+    quality: 0.9,
+    maxWidth: 1024,
+    maxHeight: 1024,
+    format: 'png' as const
+  },
+  // Balanced quality and file size
+  medium: {
+    quality: 0.75,
+    maxWidth: 800,
+    maxHeight: 800,
+    format: 'jpeg' as const
+  },
+  // Lower quality, smaller file size
+  low: {
+    quality: 0.6,
+    maxWidth: 600,
+    maxHeight: 600,
+    format: 'jpeg' as const
+  },
+  // Tiny file size for thumbnails
+  thumbnail: {
+    quality: 0.5,
+    maxWidth: 400,
+    maxHeight: 400,
+    format: 'jpeg' as const
+  }
+};
+
+// ENHANCED: Main function with compression options
 export async function generateCombinedCardImageStatic(
   membershipId: string,
   profilePicture: string,
-  memberName: string
+  memberName: string,
+  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.medium
 ): Promise<string> {
   let frontElement: HTMLDivElement | null = null;
   let backElement: HTMLDivElement | null = null;
@@ -167,7 +259,7 @@ export async function generateCombinedCardImageStatic(
     // Wait for elements to render
     await waitForRender(200);
 
-    // Capture both cards with enhanced options
+    // Capture both cards with standard options
     const [frontCanvas, backCanvas] = await Promise.all([
       html2canvas(frontElement, {
         width: 400,
@@ -213,7 +305,8 @@ export async function generateCombinedCardImageStatic(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    return finalCanvas.toDataURL('image/png', 0.95);
+    // NEW: Apply compression
+    return await compressCanvas(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
@@ -229,13 +322,14 @@ export async function generateCombinedCardImageStatic(
   }
 }
 
-// Improved version of your existing state-based approach with better timing
+// ENHANCED: Improved version with compression
 export async function generateCombinedCardImageWithStatesImproved(
   cardRef: React.RefObject<HTMLDivElement | null>,
   showBackState: () => void,
   showFrontState: () => void,
   resetState: () => void,
-  animationDuration: number = 700
+  animationDuration: number = 700,
+  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.medium
 ): Promise<string> {
   if (!cardRef.current) {
     throw new Error('Card element not found');
@@ -246,7 +340,7 @@ export async function generateCombinedCardImageWithStatesImproved(
 
     // Capture front state
     showFrontState();
-    await waitForRender(animationDuration + 100); // Wait longer than animation
+    await waitForRender(animationDuration + 100);
     
     const frontCanvas = await html2canvas(cardRef.current, {
       width: 400,
@@ -272,7 +366,7 @@ export async function generateCombinedCardImageWithStatesImproved(
     resetState();
     cardRef.current.style.transition = '';
 
-    // Create combined canvas (same logic as before)
+    // Create combined canvas
     const finalCanvas = document.createElement('canvas');
     finalCanvas.width = 1024;
     finalCanvas.height = 1024;
@@ -297,16 +391,17 @@ export async function generateCombinedCardImageWithStatesImproved(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    return finalCanvas.toDataURL('image/png', 0.95);
+    // NEW: Apply compression
+    return await compressCanvas(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
-    resetState(); // Ensure we reset state even on error
+    resetState();
     throw new Error(`Failed to generate card image: ${(error as Error).message}`);
   }
 }
 
-// Keep your existing utility functions
+// ENHANCED: Single card with compression
 export async function generateSingleCardImage(
   cardRef: React.RefObject<HTMLDivElement>,
   options: {
@@ -315,7 +410,8 @@ export async function generateSingleCardImage(
     dpi?: number;
     format?: 'png' | 'jpeg';
     quality?: number;
-  } = {}
+  } = {},
+  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.medium
 ): Promise<string> {
   if (!cardRef.current) {
     throw new Error('Card element not found');
@@ -323,9 +419,7 @@ export async function generateSingleCardImage(
 
   const {
     width = 400,
-    height = 250,
-    format = 'png',
-    quality = 0.92
+    height = 250
   } = options;
 
   try {
@@ -337,14 +431,33 @@ export async function generateSingleCardImage(
       logging: false
     });
 
-    const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
-    return canvas.toDataURL(mimeType, quality);
+    // Apply compression
+    return await compressCanvas(canvas, compressionOptions);
   } catch (error) {
     console.error('Error generating single card image:', error);
     throw new Error('Failed to generate card image');
   }
 }
 
+// NEW: Utility function to estimate file size
+export function estimateFileSize(dataURL: string): number {
+  // Remove data URL prefix to get just the base64 data
+  const base64 = dataURL.split(',')[1];
+  // Each base64 character represents 6 bits, so divide by 8 to get bytes
+  // Then multiply by 0.75 to account for base64 padding
+  return Math.round((base64.length * 3) / 4);
+}
+
+// NEW: Utility function to format file size
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Keep existing utility functions
 export async function downloadCardImage(
   dataURL: string,
   filename: string = 'card-image.png'

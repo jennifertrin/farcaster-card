@@ -85,10 +85,12 @@ export default function VirtualCard({
       console.log(imageDataUrl.length);
 
       // Cast the image using Farcaster SDK
-      await sdk.actions.composeCast({
+      const image = await sdk.actions.composeCast({
         text: `Why need a Costco Membership Card when you can have a Farcaster Pro Membership Card?\n💜 Member Name: ${memberName} \nMember #${membershipId}`,
         embeds: [imageDataUrl],
       });
+
+      console.log('image', image);
       
     } catch (error) {
       console.error('Error sharing card:', error);
