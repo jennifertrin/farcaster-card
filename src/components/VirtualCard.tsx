@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
 import { 
-  generateCombinedCardImageForFarcaster, // Changed from generateCombinedCardImageStatic
-  generateCombinedCardImageStatic // Keep this for local display if needed
+  generateCombinedCardImageForFarcaster
 } from '@/utils/cardImage';
 
 interface VirtualCardProps {
