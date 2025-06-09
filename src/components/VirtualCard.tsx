@@ -81,9 +81,11 @@ export default function VirtualCard({
       //   700 // animation duration
       // );
       
+      console.log('imageDataUrl', imageDataUrl);
+
       // Cast the image using Farcaster SDK
       await sdk.actions.composeCast({
-        text: `My Farcaster Pro Membership Card 💜\nMember #${membershipId}`,
+        text: `Why need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\nMember Name: ${memberName} \nMember #${membershipId}`,
         embeds: [imageDataUrl],
       });
       
