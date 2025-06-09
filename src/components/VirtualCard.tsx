@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-// import { 
-//   generateCombinedCardImageStatic
-// } from '@/utils/cardImage';
+import { 
+  generateCombinedCardImageStatic
+} from '@/utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -65,26 +65,23 @@ export default function VirtualCard({
     try {
       setIsSharing(true);
       
-      // Method 1: Use static generation (recommended - more reliable)
-      // const imageDataUrl = await generateCombinedCardImageStatic(
-      //   membershipId,
-      //   profilePicture,
-      //   memberName,
-      //   {
-      //     quality: 0.9,
-      //     maxWidth: 1024,
-      //     maxHeight: 1024,
-      //     format: 'png'
-      //   }
-      // );
+      const imageDataUrl = await generateCombinedCardImageStatic(
+        membershipId,
+        profilePicture,
+        memberName,
+        {
+          quality: 0.9,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          format: 'png'
+        }
+      );
 
-      // Get the base URL from the environment variable or default to window.location.origin
-      const baseUrl = process.env.NEXT_PUBLIC_HOST || window.location.origin;
-      
-      // Cast the image using Farcaster SDK - use a proper URL instead of data URL
+      console.log('imageDataUrl', imageDataUrl);
+
       await sdk.actions.composeCast({
         text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card?\n💜 Member Name: ${memberName} \nMember #${membershipId}`,
-        embeds: [`${baseUrl}/FarcasterPro.png`], // Use the static image URL instead
+        embeds: [imageDataUrl]
       });
       
     } catch (error) {

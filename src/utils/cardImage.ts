@@ -131,9 +131,9 @@ async function preloadImage(src: string): Promise<void> {
   });
 }
 
-// NEW: Image compression function
-async function compressCanvas(
-  canvas: HTMLCanvasElement, 
+// MODIFIED: Convert canvas to Blob and create object URL
+async function canvasToObjectURL(
+  canvas: HTMLCanvasElement,
   options: CompressionOptions = {}
 ): Promise<string> {
   const {
@@ -143,18 +143,20 @@ async function compressCanvas(
     format = 'jpeg'
   } = options;
 
-  // Create a new canvas for compression
-  const compressedCanvas = document.createElement('canvas');
-  const ctx = compressedCanvas.getContext('2d');
+  // Create a new canvas for compression if needed
+  let finalCanvas = canvas;
   
-  if (!ctx) {
-    throw new Error('Could not get canvas context for compression');
-  }
+  if (canvas.width > maxWidth || canvas.height > maxHeight) {
+    const compressedCanvas = document.createElement('canvas');
+    const ctx = compressedCanvas.getContext('2d');
+    
+    if (!ctx) {
+      throw new Error('Could not get canvas context for compression');
+    }
 
-  // Calculate new dimensions while maintaining aspect ratio
-  let { width, height } = canvas;
-  
-  if (width > maxWidth || height > maxHeight) {
+    // Calculate new dimensions while maintaining aspect ratio
+    let { width, height } = canvas;
+    
     const aspectRatio = width / height;
     
     if (width > height) {
@@ -164,49 +166,57 @@ async function compressCanvas(
       height = Math.min(height, maxHeight);
       width = height * aspectRatio;
     }
+
+    compressedCanvas.width = width;
+    compressedCanvas.height = height;
+
+    // Enable image smoothing for better quality when resizing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // Draw the original canvas onto the compressed canvas
+    ctx.drawImage(canvas, 0, 0, width, height);
+    finalCanvas = compressedCanvas;
   }
 
-  compressedCanvas.width = width;
-  compressedCanvas.height = height;
-
-  // Enable image smoothing for better quality when resizing
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-
-  // Draw the original canvas onto the compressed canvas
-  ctx.drawImage(canvas, 0, 0, width, height);
-
-  // Convert to compressed format
+  // Convert canvas to Blob
   const mimeType = format === 'png' ? 'image/png' : 
                    format === 'webp' ? 'image/webp' : 'image/jpeg';
-  
-  return compressedCanvas.toDataURL(mimeType, quality);
+
+  return new Promise((resolve, reject) => {
+    finalCanvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('Failed to create blob from canvas'));
+        return;
+      }
+      
+      // Create object URL from blob
+      const url = URL.createObjectURL(blob);
+      resolve(url);
+    }, mimeType, quality);
+  });
 }
 
-// NEW: Multiple compression levels
+// Compression presets remain the same
 export const COMPRESSION_PRESETS = {
-  // High quality, larger file size
   high: {
     quality: 0.9,
     maxWidth: 1024,
     maxHeight: 1024,
     format: 'png' as const
   },
-  // Balanced quality and file size
   medium: {
     quality: 0.75,
     maxWidth: 800,
     maxHeight: 800,
     format: 'jpeg' as const
   },
-  // Lower quality, smaller file size
   low: {
     quality: 0.6,
     maxWidth: 600,
     maxHeight: 600,
     format: 'jpeg' as const
   },
-  // Tiny file size for thumbnails
   thumbnail: {
     quality: 0.5,
     maxWidth: 400,
@@ -215,7 +225,7 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// ENHANCED: Main function with compression options
+// MODIFIED: Main function now returns object URL
 export async function generateCombinedCardImageStatic(
   membershipId: string,
   profilePicture: string,
@@ -303,8 +313,8 @@ export async function generateCombinedCardImageStatic(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    // NEW: Apply compression
-    return await compressCanvas(finalCanvas, compressionOptions);
+    // Convert canvas to object URL
+    return await canvasToObjectURL(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
@@ -320,7 +330,7 @@ export async function generateCombinedCardImageStatic(
   }
 }
 
-// ENHANCED: Improved version with compression
+// MODIFIED: Enhanced version with object URL
 export async function generateCombinedCardImageWithStatesImproved(
   cardRef: React.RefObject<HTMLDivElement | null>,
   showBackState: () => void,
@@ -389,8 +399,8 @@ export async function generateCombinedCardImageWithStatesImproved(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    // NEW: Apply compression
-    return await compressCanvas(finalCanvas, compressionOptions);
+    // Convert to object URL
+    return await canvasToObjectURL(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
@@ -399,7 +409,7 @@ export async function generateCombinedCardImageWithStatesImproved(
   }
 }
 
-// ENHANCED: Single card with compression
+// MODIFIED: Single card with object URL
 export async function generateSingleCardImage(
   cardRef: React.RefObject<HTMLDivElement>,
   options: {
@@ -429,41 +439,41 @@ export async function generateSingleCardImage(
       logging: false
     });
 
-    // Apply compression
-    return await compressCanvas(canvas, compressionOptions);
+    // Convert to object URL
+    return await canvasToObjectURL(canvas, compressionOptions);
   } catch (error) {
     console.error('Error generating single card image:', error);
     throw new Error('Failed to generate card image');
   }
 }
 
-// NEW: Utility function to estimate file size
-export function estimateFileSize(dataURL: string): number {
-  // Remove data URL prefix to get just the base64 data
-  const base64 = dataURL.split(',')[1];
-  // Each base64 character represents 6 bits, so divide by 8 to get bytes
-  // Then multiply by 0.75 to account for base64 padding
-  return Math.round((base64.length * 3) / 4);
+// NEW: Utility function to revoke object URL (important for memory management)
+export function revokeImageURL(url: string): void {
+  if (url.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
 }
 
-// NEW: Utility function to format file size
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+// NEW: Utility function to get blob from object URL
+export async function getImageBlob(url: string): Promise<Blob> {
+  const response = await fetch(url);
+  return response.blob();
 }
 
-// Keep existing utility functions
+// MODIFIED: Download function now works with both data URLs and object URLs
 export async function downloadCardImage(
-  dataURL: string,
+  imageURL: string,
   filename: string = 'card-image.png'
 ): Promise<void> {
   try {
+    let downloadURL = imageURL;
+    
+    // If it's an object URL, we can use it directly
+    // If it's a data URL, we can also use it directly
+    
     const link = document.createElement('a');
     link.download = filename;
-    link.href = dataURL;
+    link.href = downloadURL;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -471,6 +481,27 @@ export async function downloadCardImage(
     console.error('Error downloading card image:', error);
     throw new Error('Failed to download image');
   }
+}
+
+// NEW: Convert object URL back to data URL if needed
+export async function objectURLToDataURL(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL());
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = url;
+  });
 }
 
 export function generateCardImageFilename(
