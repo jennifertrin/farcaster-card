@@ -93,13 +93,13 @@ export function createStaticCardElements(
         </div>
 
         <!-- Photo section -->
-        <div style="width: 80px; height: 96px; background: #d1d5db; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-          ${profilePicture && profilePicture !== '/placeholder-profile.png' ? 
-            `<img src="${profilePicture}" alt="Member Photo" style="width: 100%; height: 100%; object-fit: cover;" />` :
-            `<svg width="40" height="40" viewBox="0 0 24 24" fill="#6b7280">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>`
-          }
+        <div style="width: 80px; height: 96px; background: #d1d5db; overflow: hidden;">
+          <img 
+            src="${profilePicture}" 
+            alt="Member Photo" 
+            style="width: 100%; height: 100%; object-fit: cover;"
+            crossorigin="anonymous"
+          />
         </div>
       </div>
     </div>
@@ -108,15 +108,9 @@ export function createStaticCardElements(
   return { frontElement, backElement };
 }
 
-// Enhanced wait function with multiple strategies
-async function waitForRender(ms: number = 300): Promise<void> {
-  return new Promise(resolve => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setTimeout(resolve, ms);
-      });
-    });
-  });
+// Helper function to wait for render
+function waitForRender(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Preload images to avoid CORS and loading issues
@@ -131,49 +125,7 @@ async function preloadImage(src: string): Promise<void> {
   });
 }
 
-// Upload canvas to API and get public URL
-async function uploadCanvasToAPI(
-  canvas: HTMLCanvasElement,
-  options: CompressionOptions = {}
-): Promise<string> {
-  const {
-    quality = 0.8,
-    format = 'jpeg'
-  } = options;
-
-  const mimeType = format === 'png' ? 'image/png' : 
-                   format === 'webp' ? 'image/webp' : 'image/jpeg';
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        reject(new Error('Failed to create blob from canvas'));
-        return;
-      }
-      
-      try {
-        const formData = new FormData();
-        formData.append('image', blob, `card-image.${format}`);
-        
-        const response = await fetch('/api/upload-image-blob', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Upload failed: ${response.statusText}`);
-        }
-        
-        const { url } = await response.json();
-        resolve(url);
-      } catch (error) {
-        reject(error);
-      }
-    }, mimeType, quality);
-  });
-}
-
-// Convert canvas to compressed canvas (for local use)
+// Convert canvas to compressed canvas
 async function compressCanvas(
   canvas: HTMLCanvasElement,
   options: CompressionOptions = {}
@@ -220,7 +172,7 @@ async function compressCanvas(
   return compressedCanvas;
 }
 
-// Convert canvas to data URL (for local display)
+// Convert canvas to data URL
 async function canvasToDataURL(
   canvas: HTMLCanvasElement,
   options: CompressionOptions = {}
@@ -265,12 +217,12 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// Main function that returns PUBLIC URL (for Farcaster)
+// Main function that returns a data URL (for Farcaster)
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
   profilePicture: string,
   memberName: string,
-  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.medium
+  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.high
 ): Promise<string> {
   let frontElement: HTMLDivElement | null = null;
   let backElement: HTMLDivElement | null = null;
@@ -353,8 +305,8 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    // Upload to API and return public URL
-    return await uploadCanvasToAPI(finalCanvas, compressionOptions);
+    // Convert to data URL and return
+    return await canvasToDataURL(finalCanvas, compressionOptions);
 
   } catch (error) {
     console.error('Error generating combined card image:', error);

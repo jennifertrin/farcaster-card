@@ -65,8 +65,15 @@ export default function VirtualCard({
     try {
       setIsSharing(true);
       
-      // Use the Farcaster-compatible function that returns a public URL
-      const imageUrl = await generateCombinedCardImageForFarcaster(
+      console.log('Starting share process...');
+      console.log('Generating card image with params:', {
+        membershipId,
+        memberName,
+        profilePictureUrl: profilePicture
+      });
+      
+      // Generate the card image as a data URL
+      const imageDataUrl = await generateCombinedCardImageForFarcaster(
         membershipId,
         profilePicture,
         memberName,
@@ -78,21 +85,26 @@ export default function VirtualCard({
         }
       );
 
-      console.log('Public image URL:', imageUrl);
+      console.log('Successfully generated image data URL');
 
+      console.log('Attempting to compose Farcaster cast...');
       await sdk.actions.composeCast({
         text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card?\n💜 Member Name: ${memberName} \nMember #${membershipId}`,
-        embeds: [imageUrl] // Now this is a proper public URL
+        embeds: [imageDataUrl]
       });
       
+      console.log('Successfully shared to Farcaster!');
+      
     } catch (error) {
-      console.error('Error sharing card:', error);
+      console.error('Error in share process:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
       // More detailed error handling
       if (error instanceof Error) {
-        if (error.message.includes('Upload failed')) {
-          alert('Failed to upload image. Please check your internet connection and try again.');
-        } else if (error.message.includes('Failed to generate')) {
+        if (error.message.includes('Failed to generate')) {
           alert('Failed to generate card image. Please try again.');
         } else {
           alert(`Failed to share card: ${error.message}`);
