@@ -78,9 +78,9 @@ export default function VirtualCard({
         profilePicture,
         memberName,
         {
-          quality: 0.9,
-          maxWidth: 1024,
-          maxHeight: 1024,
+          quality: 0.7,
+          maxWidth: 512,
+          maxHeight: 512,
           format: 'png'
         }
       );
