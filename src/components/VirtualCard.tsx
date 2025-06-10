@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { 
-  generateCombinedCardImageForFarcaster
-} from '@/utils/cardImage';
+// import { 
+//   generateCombinedCardImageForFarcaster
+// } from '@/utils/cardImage';
+import html2canvas from 'html2canvas';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -73,19 +74,44 @@ export default function VirtualCard({
       });
       
       // Generate the card image as a data URL
-      const imageDataUrl = await generateCombinedCardImageForFarcaster(
-        membershipId,
-        profilePicture,
-        memberName,
-        {
-          quality: 0.3,
-          maxWidth: 300,
-          maxHeight: 300,
-          format: 'png'
-        }
-      );
+      // const imageDataUrl = await generateCombinedCardImageForFarcaster(
+      //   membershipId,
+      //   profilePicture,
+      //   memberName,
+      //   {
+      //     quality: 0.3,
+      //     maxWidth: 300,
+      //     maxHeight: 300,
+      //     format: 'png'
+      //   }
+      // );
 
-      console.log('imageDataUrl', imageDataUrl);
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Could not get 2d canvas context');
+      }
+      
+      ctx.fillStyle = '#8B5CF6';
+      ctx.fillRect(0, 0, 200, 200);
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText('TEST', 70, 110);
+      
+      const testUrl = canvas.toDataURL('image/jpeg', 0.6);
+      console.log('Test size:', (testUrl.length * 0.75) / 1024, 'KB');
+      
+
+// Try sharing this first
+await sdk.actions.composeCast({
+  text: 'Test image',
+  embeds: [testUrl]
+});
+
+      // console.log('imageDataUrl', imageDataUrl);
 
       console.log('Successfully generated image data URL');
 
