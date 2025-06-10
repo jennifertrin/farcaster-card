@@ -308,6 +308,9 @@ export async function generateCombinedCardImageForFarcaster(
     // Convert to data URL and return
     return await canvasToDataURL(finalCanvas, compressionOptions);
 
+    console.log('finalCanvas', finalCanvas);
+    console.log('finalCanvas.width', finalCanvas.width);
+
   } catch (error) {
     console.error('Error generating combined card image:', error);
     throw new Error(`Failed to generate card image: ${(error as Error).message}`);
