@@ -221,8 +221,7 @@ export const COMPRESSION_PRESETS = {
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
   profilePicture: string,
-  memberName: string,
-  compressionOptions: CompressionOptions = COMPRESSION_PRESETS.high
+  memberName: string
 ): Promise<Blob> {
   let frontElement: HTMLDivElement | null = null;
   let backElement: HTMLDivElement | null = null;
