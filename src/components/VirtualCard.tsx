@@ -3,10 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-// import { 
-//   generateCombinedCardImageForFarcaster
-// } from '@/utils/cardImage';
-// import html2canvas from 'html2canvas';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -67,61 +63,19 @@ export default function VirtualCard({
       setIsSharing(true);
       
       console.log('Starting share process...');
-      console.log('Generating card image with params:', {
-        membershipId,
-        memberName,
-        profilePictureUrl: profilePicture
+      console.log('Sharing page URL for interactive card experience');
+      
+      // Share the current page URL (like Magic 8 Ball approach)
+      // This allows people to interact with the actual Virtual Card
+      const result = await sdk.actions.composeCast({
+        text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\nMember Name: ${memberName}\nFID: ${membershipId}`,
+        embeds: [window.location.href] // Share page URL for interactive experience
       });
       
-      // Generate the card image as a data URL
-      // const imageDataUrl = await generateCombinedCardImageForFarcaster(
-      //   membershipId,
-      //   profilePicture,
-      //   memberName,
-      //   {
-      //     quality: 0.3,
-      //     maxWidth: 300,
-      //     maxHeight: 300,
-      //     format: 'png'
-      //   }
-      // );
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 200;
-      const ctx = canvas.getContext('2d');
-      
-      if (!ctx) {
-        throw new Error('Could not get 2d canvas context');
+      if (result?.cast) {
+        console.log('Successfully shared to Farcaster!');
+        console.log('Cast hash:', result.cast.hash);
       }
-      
-      ctx.fillStyle = '#8B5CF6';
-      ctx.fillRect(0, 0, 200, 200);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 20px Arial';
-      ctx.fillText('TEST', 70, 110);
-      
-      const testUrl = canvas.toDataURL('image/jpeg', 0.6);
-      console.log('Test size:', (testUrl.length * 0.75) / 1024, 'KB');
-      
-
-// Try sharing this first
-await sdk.actions.composeCast({
-  text: 'Test image',
-  embeds: [testUrl]
-});
-
-      // console.log('imageDataUrl', imageDataUrl);
-
-      console.log('Successfully generated image data URL');
-
-      console.log('Attempting to compose Farcaster cast...');
-      // await sdk.actions.composeCast({
-      //   text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜/n Member Name: ${memberName} \nFID: ${membershipId}`,
-      //   embeds: [imageDataUrl]
-      // });
-      
-      console.log('Successfully shared to Farcaster!');
       
     } catch (error) {
       console.error('Error in share process:', {
@@ -130,10 +84,12 @@ await sdk.actions.composeCast({
         stack: error instanceof Error ? error.stack : undefined
       });
       
-      // More detailed error handling
+      // Handle different types of errors
       if (error instanceof Error) {
-        if (error.message.includes('Failed to generate')) {
-          alert('Failed to generate card image. Please try again.');
+        if (error.name === 'AbortError') {
+          // User cancelled the share dialog - normal behavior
+          console.log('Share cancelled by user');
+          return;
         } else {
           alert(`Failed to share card: ${error.message}`);
         }

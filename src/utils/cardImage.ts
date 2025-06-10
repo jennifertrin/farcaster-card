@@ -217,13 +217,13 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// Main function that returns a data URL (for Farcaster)
+// UPDATED: Main function that returns a Blob (for Farcaster)
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
   profilePicture: string,
   memberName: string,
   compressionOptions: CompressionOptions = COMPRESSION_PRESETS.high
-): Promise<string> {
+): Promise<Blob> {
   let frontElement: HTMLDivElement | null = null;
   let backElement: HTMLDivElement | null = null;
 
@@ -305,11 +305,19 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.drawImage(frontCanvas, 0, startY, cardWidth, cardHeight);
     ctx.drawImage(backCanvas, 0, startY + cardHeight + spacing, cardWidth, cardHeight);
 
-    // Convert to data URL and return
-    return await canvasToDataURL(finalCanvas, compressionOptions);
-
     console.log('finalCanvas', finalCanvas);
     console.log('finalCanvas.width', finalCanvas.width);
+
+    // UPDATED: Convert to Blob and return (like your Magic 8 Ball example)
+    return new Promise((resolve, reject) => {
+      finalCanvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Failed to create blob'));
+        }
+      }, 'image/png', 0.95);
+    });
 
   } catch (error) {
     console.error('Error generating combined card image:', error);
@@ -323,6 +331,45 @@ export async function generateCombinedCardImageForFarcaster(
       backElement.parentNode.removeChild(backElement);
     }
   }
+}
+
+// Helper function to upload blob and get hosted URL
+export async function uploadCardImageBlob(blob: Blob): Promise<string> {
+  const formData = new FormData();
+  formData.append('image', blob, 'card.png');
+
+  // You'll need to implement one of these upload methods:
+  
+  // Option 1: Upload to your own server
+  const response = await fetch('/api/upload-image', {
+    method: 'POST',
+    body: formData
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to upload image to server');
+  }
+  
+  const data = await response.json();
+  return data.url;
+
+  // Option 2: Upload to Imgur (alternative - uncomment and use instead)
+  /*
+  const response = await fetch('https://api.imgur.com/3/image', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Client-ID YOUR_IMGUR_CLIENT_ID'
+    },
+    body: formData
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to upload to Imgur');
+  }
+  
+  const data = await response.json();
+  return data.data.link;
+  */
 }
 
 // Original function that returns DATA URL (for local display/download)
