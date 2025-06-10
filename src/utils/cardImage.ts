@@ -155,7 +155,7 @@ async function uploadCanvasToAPI(
         const formData = new FormData();
         formData.append('image', blob, `card-image.${format}`);
         
-        const response = await fetch('/api/upload-image', {
+        const response = await fetch('/api/upload-image-blob', {
           method: 'POST',
           body: formData,
         });
