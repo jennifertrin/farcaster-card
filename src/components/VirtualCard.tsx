@@ -6,7 +6,7 @@ import { sdk } from '@farcaster/frame-sdk';
 // import { 
 //   generateCombinedCardImageForFarcaster
 // } from '@/utils/cardImage';
-import html2canvas from 'html2canvas';
+// import html2canvas from 'html2canvas';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -116,10 +116,10 @@ await sdk.actions.composeCast({
       console.log('Successfully generated image data URL');
 
       console.log('Attempting to compose Farcaster cast...');
-      await sdk.actions.composeCast({
-        text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜/n Member Name: ${memberName} \nFID: ${membershipId}`,
-        embeds: [imageDataUrl]
-      });
+      // await sdk.actions.composeCast({
+      //   text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜/n Member Name: ${memberName} \nFID: ${membershipId}`,
+      //   embeds: [imageDataUrl]
+      // });
       
       console.log('Successfully shared to Farcaster!');
       
