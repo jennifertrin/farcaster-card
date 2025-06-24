@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { uploadCardImageBlob, generateBackCardImageForFarcaster, generateCardFilename, checkCardImageExists } from '../utils/cardImage';
+import { uploadCardImageBlob, generateCombinedCardImageForFarcaster, generateCardFilename, checkCardImageExists } from '../utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -73,42 +73,39 @@ export default function VirtualCard({
       console.log('Checking if card image already exists...');
       const existingImageUrl = await checkCardImageExists(cardFilename);
       
-      let backImageUrl: string;
+      let cardImageUrl: string;
       
       if (existingImageUrl) {
         console.log('Card image already exists, using cached version:', existingImageUrl);
-        backImageUrl = existingImageUrl;
+        cardImageUrl = existingImageUrl;
       } else {
-        console.log('Card image not found, generating new back-side image...');
+        console.log('Card image not found, generating new combined image...');
         
-        // Generate only the back-side card image as a blob
-        const backImageBlob = await generateBackCardImageForFarcaster(
+        // Generate the combined card image as a blob (front on top, back on bottom)
+        const cardImageBlob = await generateCombinedCardImageForFarcaster(
           membershipId,
           profilePicture,
           memberName
         );
         
-        console.log('Back image generated, uploading...');
+        console.log('Combined card image generated, uploading...');
         
-        // Upload the back image to get a hosted URL with the specific filename
-        backImageUrl = await uploadCardImageBlob(backImageBlob, cardFilename);
+        // Upload the combined image to get a hosted URL with the specific filename
+        cardImageUrl = await uploadCardImageBlob(cardImageBlob, cardFilename);
         
-        console.log('Back image uploaded successfully:', backImageUrl);
+        console.log('Card image uploaded successfully:', cardImageUrl);
       }
       
-      console.log('Sharing card images to Farcaster...');
+      console.log('Sharing card image to Farcaster...');
       
-      // Use static front image URL and back image URL
-      const frontImageUrl = `${process.env.NEXT_PUBLIC_HOST || window.location.origin}/FarcasterPro.png`;
-      
-      // Share both images to Farcaster
+      // Share the single combined image to Farcaster
       const result = await sdk.actions.composeCast({
         text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\nMember Name: ${memberName}\nFID: ${membershipId}`,
-        embeds: [frontImageUrl, backImageUrl] // Share both front and back images
+        embeds: [cardImageUrl] // Share the single combined image
       });
       
       if (result?.cast) {
-        console.log('Successfully shared card images to Farcaster!');
+        console.log('Successfully shared card image to Farcaster!');
         console.log('Cast hash:', result.cast.hash);
       }
       
