@@ -62,9 +62,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 1. **Card Generation**: The app generates a virtual membership card with the user's Farcaster profile information
 2. **Interactive Experience**: Users can flip the card to see both front and back
 3. **Image Sharing**: When users click "Share Card", the app:
-   - Generates a high-quality image of both sides of the card
-   - Uploads the image to Vercel Blob storage
-   - Shares the image URL to Farcaster via the Frame SDK
+   - Uses a static front-side image (same for all users)
+   - Generates a high-quality image of the back-side with user's personal information
+   - Uploads only the back-side image to Vercel Blob storage
+   - Shares both front and back images to Farcaster via the Frame SDK
 
 ## Technologies Used
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { generateCombinedCardImageForFarcaster, uploadCardImageBlob } from '../utils/cardImage';
+import { generateCombinedCardImageForFarcaster, uploadCardImageBlob, generateBackCardImageForFarcaster } from '../utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -64,31 +64,34 @@ export default function VirtualCard({
       setIsSharing(true);
       
       console.log('Starting share process...');
-      console.log('Generating card image...');
+      console.log('Generating back-side card image...');
       
-      // Generate the card image as a blob
-      const cardImageBlob = await generateCombinedCardImageForFarcaster(
+      // Generate only the back-side card image as a blob
+      const backImageBlob = await generateBackCardImageForFarcaster(
         membershipId,
         profilePicture,
         memberName
       );
       
-      console.log('Card image generated, uploading...');
+      console.log('Back image generated, uploading...');
       
-      // Upload the image to get a hosted URL
-      const imageUrl = await uploadCardImageBlob(cardImageBlob);
+      // Upload the back image to get a hosted URL
+      const backImageUrl = await uploadCardImageBlob(backImageBlob);
       
-      console.log('Image uploaded successfully:', imageUrl);
-      console.log('Sharing card image to Farcaster...');
+      console.log('Back image uploaded successfully:', backImageUrl);
+      console.log('Sharing card images to Farcaster...');
       
-      // Share the card image URL to Farcaster
+      // Use static front image URL and uploaded back image URL
+      const frontImageUrl = `${process.env.NEXT_PUBLIC_HOST || window.location.origin}/FarcasterPro.png`;
+      
+      // Share both images to Farcaster
       const result = await sdk.actions.composeCast({
         text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\nMember Name: ${memberName}\nFID: ${membershipId}`,
-        embeds: [imageUrl] // Share the uploaded image URL
+        embeds: [frontImageUrl, backImageUrl] // Share both front and back images
       });
       
       if (result?.cast) {
-        console.log('Successfully shared card image to Farcaster!');
+        console.log('Successfully shared card images to Farcaster!');
         console.log('Cast hash:', result.cast.hash);
       }
       

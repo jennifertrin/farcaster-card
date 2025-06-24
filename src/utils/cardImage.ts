@@ -338,6 +338,68 @@ export async function generateCombinedCardImageForFarcaster(
   }
 }
 
+// Generate only the back-side card image as a blob (for Farcaster)
+export async function generateBackCardImageForFarcaster(
+  membershipId: string,
+  profilePicture: string,
+  memberName: string
+): Promise<Blob> {
+  let backElement: HTMLDivElement | null = null;
+
+  try {
+    // Preload profile picture
+    await preloadImage(profilePicture);
+
+    // Create static back element only
+    const { backElement: back } = createStaticCardElements(
+      membershipId,
+      profilePicture,
+      memberName
+    );
+    
+    backElement = back;
+
+    // Add to DOM temporarily (positioned off-screen)
+    backElement.style.position = 'absolute';
+    backElement.style.left = '-9999px';
+    backElement.style.top = '-9999px';
+    
+    document.body.appendChild(backElement);
+
+    // Wait for element to render
+    await waitForRender(200);
+
+    // Capture back card with standard options
+    const backCanvas = await html2canvas(backElement, {
+      width: 400,
+      height: 250,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    });
+
+    // Convert to Blob and return
+    return new Promise((resolve, reject) => {
+      backCanvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Failed to create blob'));
+        }
+      }, 'image/png', 0.95);
+    });
+
+  } catch (error) {
+    console.error('Error generating back card image:', error);
+    throw new Error(`Failed to generate back card image: ${(error as Error).message}`);
+  } finally {
+    // Clean up DOM element
+    if (backElement && backElement.parentNode) {
+      backElement.parentNode.removeChild(backElement);
+    }
+  }
+}
+
 // Helper function to upload blob and get hosted URL
 export async function uploadCardImageBlob(blob: Blob): Promise<string> {
   const formData = new FormData();
