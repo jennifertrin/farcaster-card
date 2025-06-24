@@ -302,7 +302,7 @@ export async function generateCombinedCardImageForFarcaster(
     const cardHeight = 250;
     
     // Reduced overlap - only overlapping the white border area
-    const overlap = 30; // Overlap amount - covers about half the white border
+    const overlap = 10; // Overlap amount - covers about half the white border
 
     // Center cards horizontally with slight offset for visual appeal
     const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
