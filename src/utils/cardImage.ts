@@ -234,38 +234,31 @@ export async function generateCombinedCardImageForFarcaster(
   let backElement: HTMLDivElement | null = null;
 
   try {
-    // Preload images first
     await Promise.all([
       preloadImage('/FarcasterPro.png'),
       preloadImage(profilePicture)
     ]);
 
-    // Create static elements
     const { frontElement: front, backElement: back } = createStaticCardElements(
       membershipId,
       profilePicture,
       memberName
     );
-    
+
     frontElement = front;
     backElement = back;
 
-    // Add to DOM temporarily (positioned off-screen)
     frontElement.style.position = 'absolute';
     frontElement.style.left = '-9999px';
     frontElement.style.top = '-9999px';
-    
     backElement.style.position = 'absolute';
     backElement.style.left = '-9999px';
     backElement.style.top = '-9999px';
-    
     document.body.appendChild(frontElement);
     document.body.appendChild(backElement);
 
-    // Wait for elements to render
     await waitForRender(200);
 
-    // Capture both cards with standard options
     const [frontCanvas, backCanvas] = await Promise.all([
       html2canvas(frontElement, {
         width: 400,
@@ -283,37 +276,24 @@ export async function generateCombinedCardImageForFarcaster(
       })
     ]);
 
-    // Create final combined canvas with 3:2 aspect ratio
     const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = 900;  // 3:2 aspect ratio
+    finalCanvas.width = 900;
     finalCanvas.height = 600;
     const ctx = finalCanvas.getContext('2d');
+    if (!ctx) throw new Error('Could not get canvas context');
 
-    if (!ctx) {
-      throw new Error('Could not get canvas context');
-    }
-
-    // Set background
     ctx.fillStyle = '#f5f0ec';
     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-    // Card dimensions
     const cardWidth = 400;
     const cardHeight = 250;
-    
-    // Reduced overlap - only overlapping the white border area
-    const overlap = 10; // Overlap amount - covers about half the white border
-
-    // Center cards horizontally with slight offset for visual appeal
+    const overlap = 60;
+    const frontY = 160;
+    const backY = frontY - overlap;
     const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
     const backCenterX = (finalCanvas.width - cardWidth) / 2 + 15;
 
-    // Position front card at top
-    const frontY = 60;
-    // Position back card with subtle overlap - only covering the bottom border area
-    const backY = frontY + cardHeight - overlap;
-
-    // Draw front card first with enhanced shadow
+    // Draw front card first (lower in z-order)
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
@@ -323,7 +303,7 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
     ctx.restore();
 
-    // Draw back card on top with stronger shadow for depth, overlapping slightly
+    // Draw back card second (higher in z-order, visually overlaps front)
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
@@ -333,28 +313,18 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.drawImage(backCanvas, backCenterX, backY, cardWidth, cardHeight);
     ctx.restore();
 
-    // Convert to Blob and return
     return new Promise((resolve, reject) => {
       finalCanvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error('Failed to create blob'));
-        }
+        if (blob) resolve(blob);
+        else reject(new Error('Failed to create blob'));
       }, 'image/png', 0.95);
     });
-
   } catch (error) {
     console.error('Error generating combined card image:', error);
     throw new Error(`Failed to generate card image: ${(error as Error).message}`);
   } finally {
-    // Clean up DOM elements
-    if (frontElement && frontElement.parentNode) {
-      frontElement.parentNode.removeChild(frontElement);
-    }
-    if (backElement && backElement.parentNode) {
-      backElement.parentNode.removeChild(backElement);
-    }
+    if (frontElement?.parentNode) frontElement.parentNode.removeChild(frontElement);
+    if (backElement?.parentNode) backElement.parentNode.removeChild(backElement);
   }
 }
 
