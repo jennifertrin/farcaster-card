@@ -300,18 +300,17 @@ export async function generateCombinedCardImageForFarcaster(
     const cardWidth = 400;
     const cardHeight = 250;
     
-    // Reduced overlap to preserve front card's complete branding
-    // Front card needs full visibility for "FARCASTER PRO MEMBER" text
-    const overlap = 45; // Smaller overlap to avoid covering front card text
+    // Minimal overlap to preserve front card's complete branding
+    // Back card should only overlap the very bottom of the front card
+    const overlap = 30; // Small overlap to avoid covering "PRO MEMBER" text
 
     // Center cards horizontally with slight offset for visual appeal
     const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
     const backCenterX = (finalCanvas.width - cardWidth) / 2 + 15;
 
-    // Position front card at top
-    const frontY = 70;
-    // Position back card so it only overlaps the very bottom of front card
-    // This preserves all the "FARCASTER PRO MEMBER" branding
+    // Position front card higher to ensure full branding visibility
+    const frontY = 50;
+    // Position back card to only overlap the bottom edge of front card
     const backY = frontY + cardHeight - overlap;
 
     // Draw front card first (behind back card) with enhanced shadow
@@ -741,7 +740,7 @@ export function generateCardFilename(
   // Ensure membershipId is sanitized
   const sanitizedMembershipId = membershipId.replace(/[^a-zA-Z0-9]/g, '');
   
-  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}-90.png`;
+  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}-80.png`;
   
   return filename;
 }
