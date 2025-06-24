@@ -299,32 +299,36 @@ export async function generateCombinedCardImageForFarcaster(
     // Card dimensions
     const cardWidth = 400;
     const cardHeight = 250;
-    const overlap = 50; // Controlled overlap for better visual appeal
+    
+    // Reduced overlap to preserve front card's complete branding
+    // Front card needs full visibility for "FARCASTER PRO MEMBER" text
+    const overlap = 45; // Smaller overlap to avoid covering front card text
 
-    // Center cards horizontally with slight offset for dynamic look
-    const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 20;
-    const backCenterX = (finalCanvas.width - cardWidth) / 2 + 20;
+    // Center cards horizontally with slight offset for visual appeal
+    const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
+    const backCenterX = (finalCanvas.width - cardWidth) / 2 + 15;
 
-    // Position front card slightly higher and to the left
-    const frontY = 80;
-    // Position back card overlapping but clearly visible, offset to the right
+    // Position front card at top
+    const frontY = 70;
+    // Position back card so it only overlaps the very bottom of front card
+    // This preserves all the "FARCASTER PRO MEMBER" branding
     const backY = frontY + cardHeight - overlap;
 
-    // Draw back card first (behind front card)
+    // Draw back card first (behind front card) with enhanced shadow
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
     ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 10;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 12;
     ctx.drawImage(backCanvas, backCenterX, backY, cardWidth, cardHeight);
     ctx.restore();
 
-    // Draw front card on top (higher z-index effect)
+    // Draw front card on top with stronger shadow for depth
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 25;
+    ctx.shadowBlur = 18;
     ctx.shadowOffsetX = -2;
     ctx.shadowOffsetY = 8;
     ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
