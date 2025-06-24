@@ -302,7 +302,7 @@ export async function generateCombinedCardImageForFarcaster(
     const cardHeight = 250;
     
     // Reduced overlap - only overlapping the white border area
-    const overlap = 20; // Overlap amount - covers about half the white border
+    const overlap = 10; // Overlap amount - covers about half the white border
 
     // Center cards horizontally with slight offset for visual appeal
     const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
@@ -678,7 +678,7 @@ export function generateCardFilename(
   // Ensure membershipId is sanitized
   const sanitizedMembershipId = membershipId.replace(/[^a-zA-Z0-9]/g, '');
   
-  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}-20.png`;
+  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}.png`;
   
   return filename;
 }
