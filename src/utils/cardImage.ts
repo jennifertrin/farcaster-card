@@ -223,7 +223,7 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// Generate a single combined card image with front on top and back centered below (3:2 aspect ratio)
+// Generate a single combined card image with front on top and back below with spacing (3:2 aspect ratio)
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
   profilePicture: string,
@@ -299,34 +299,35 @@ export async function generateCombinedCardImageForFarcaster(
     // Card dimensions
     const cardWidth = 400;
     const cardHeight = 250;
-    const overlap = 30; // Amount of vertical overlap between cards
+    const overlap = 50; // Controlled overlap for better visual appeal
 
-    // Center cards horizontally
-    const centerX = (finalCanvas.width - cardWidth) / 2;
+    // Center cards horizontally with slight offset for dynamic look
+    const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 20;
+    const backCenterX = (finalCanvas.width - cardWidth) / 2 + 20;
 
-    // Position front card near the top, centered
-    const frontY = 60;
-    // Position back card centered below, overlapping the bottom of the front card
+    // Position front card slightly higher and to the left
+    const frontY = 80;
+    // Position back card overlapping but clearly visible, offset to the right
     const backY = frontY + cardHeight - overlap;
 
-    // Draw front card (full opacity, shadow)
+    // Draw back card first (behind front card)
     ctx.save();
     ctx.globalAlpha = 1.0;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
-    ctx.shadowBlur = 16;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 6;
-    ctx.drawImage(frontCanvas, centerX, frontY, cardWidth, cardHeight);
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 10;
+    ctx.drawImage(backCanvas, backCenterX, backY, cardWidth, cardHeight);
     ctx.restore();
 
-    // Draw back card (full opacity, shadow, on top of front card, but lower)
+    // Draw front card on top (higher z-index effect)
     ctx.save();
     ctx.globalAlpha = 1.0;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.22)';
-    ctx.shadowBlur = 18;
-    ctx.shadowOffsetX = 0;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 25;
+    ctx.shadowOffsetX = -2;
     ctx.shadowOffsetY = 8;
-    ctx.drawImage(backCanvas, centerX, backY, cardWidth, cardHeight);
+    ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
     ctx.restore();
 
     // Convert to Blob and return
@@ -513,14 +514,14 @@ export async function generateCombinedCardImageStatic(
     ctx.fillStyle = '#f5f0ec';
     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-    // Calculate positioning
+    // Calculate positioning with proper spacing
     const cardWidth = 1024;
     const cardHeight = 640;
-    const spacing = 32;
+    const spacing = 64; // Increased spacing to prevent overlap
     const totalCardsHeight = (cardHeight * 2) + spacing;
     const startY = (1024 - totalCardsHeight) / 2;
 
-    // Draw both cards with better quality
+    // Draw both cards with better quality and no overlap
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     
@@ -603,7 +604,7 @@ export async function generateCombinedCardImageWithStatesImproved(
 
     const cardWidth = 1024;
     const cardHeight = 640;
-    const spacing = 32;
+    const spacing = 64; // Increased spacing to prevent overlap
     const totalCardsHeight = (cardHeight * 2) + spacing;
     const startY = (1024 - totalCardsHeight) / 2;
 
