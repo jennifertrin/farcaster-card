@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
+import { generateCombinedCardImageForFarcaster, uploadCardImageBlob } from '../utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -63,17 +64,31 @@ export default function VirtualCard({
       setIsSharing(true);
       
       console.log('Starting share process...');
-      console.log('Sharing page URL for interactive card experience');
+      console.log('Generating card image...');
       
-      // Share the current page URL (like Magic 8 Ball approach)
-      // This allows people to interact with the actual Virtual Card
+      // Generate the card image as a blob
+      const cardImageBlob = await generateCombinedCardImageForFarcaster(
+        membershipId,
+        profilePicture,
+        memberName
+      );
+      
+      console.log('Card image generated, uploading...');
+      
+      // Upload the image to get a hosted URL
+      const imageUrl = await uploadCardImageBlob(cardImageBlob);
+      
+      console.log('Image uploaded successfully:', imageUrl);
+      console.log('Sharing card image to Farcaster...');
+      
+      // Share the card image URL to Farcaster
       const result = await sdk.actions.composeCast({
         text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\nMember Name: ${memberName}\nFID: ${membershipId}`,
-        embeds: [window.location.href] // Share page URL for interactive experience
+        embeds: [imageUrl] // Share the uploaded image URL
       });
       
       if (result?.cast) {
-        console.log('Successfully shared to Farcaster!');
+        console.log('Successfully shared card image to Farcaster!');
         console.log('Cast hash:', result.cast.hash);
       }
       
@@ -90,6 +105,12 @@ export default function VirtualCard({
           // User cancelled the share dialog - normal behavior
           console.log('Share cancelled by user');
           return;
+        } else if (error.message.includes('Failed to generate card image')) {
+          alert('Failed to generate card image. Please try again.');
+        } else if (error.message.includes('Failed to upload image')) {
+          alert('Failed to upload image. Please check your internet connection and try again.');
+        } else if (error.message.includes('Failed to share')) {
+          alert('Failed to share to Farcaster. Please make sure you\'re connected to Farcaster and try again.');
         } else {
           alert(`Failed to share card: ${error.message}`);
         }

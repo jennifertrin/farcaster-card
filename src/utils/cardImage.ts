@@ -99,7 +99,13 @@ export function createStaticCardElements(
             alt="Member Photo" 
             style="width: 100%; height: 100%; object-fit: cover;"
             crossorigin="anonymous"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
           />
+          <div style="width: 100%; height: 100%; background: #9ca3af; display: none; align-items: center; justify-content: center;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" style="color: #374151;">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -337,38 +343,19 @@ export async function uploadCardImageBlob(blob: Blob): Promise<string> {
   const formData = new FormData();
   formData.append('image', blob, 'card.png');
 
-  // You'll need to implement one of these upload methods:
-  
-  // Option 1: Upload to your own server
-  const response = await fetch('/api/upload-image', {
+  // Upload to our server endpoint
+  const response = await fetch('/api/upload-image-blob', {
     method: 'POST',
     body: formData
   });
   
   if (!response.ok) {
-    throw new Error('Failed to upload image to server');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Failed to upload image to server: ${errorData.error || response.statusText}`);
   }
   
   const data = await response.json();
   return data.url;
-
-  // Option 2: Upload to Imgur (alternative - uncomment and use instead)
-  /*
-  const response = await fetch('https://api.imgur.com/3/image', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Client-ID YOUR_IMGUR_CLIENT_ID'
-    },
-    body: formData
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to upload to Imgur');
-  }
-  
-  const data = await response.json();
-  return data.data.link;
-  */
 }
 
 // Original function that returns DATA URL (for local display/download)

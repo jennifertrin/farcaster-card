@@ -1,8 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Farcaster Pro Membership Card
+
+A virtual membership card generator for Farcaster users, featuring an interactive card that can be flipped and shared as an image.
+
+## Features
+
+- Interactive card with flip animation
+- Automatic card image generation
+- Share card images directly to Farcaster
+- Costco-style membership card design
+- Profile picture integration
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Required for Vercel Blob Storage (for image uploads)
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token_here
+
+# Required for Farcaster Frame metadata
+NEXT_PUBLIC_HOST=https://your-domain.com
+
+# For development
+# NEXT_PUBLIC_HOST=http://localhost:3000
+```
+
+### Setting up Vercel Blob Storage
+
+1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
+2. Select your project
+3. Go to the "Storage" tab
+4. Create a new Blob store
+5. Copy the `BLOB_READ_WRITE_TOKEN` and add it to your `.env.local` file
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -16,9 +57,24 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Card Generation**: The app generates a virtual membership card with the user's Farcaster profile information
+2. **Interactive Experience**: Users can flip the card to see both front and back
+3. **Image Sharing**: When users click "Share Card", the app:
+   - Generates a high-quality image of both sides of the card
+   - Uploads the image to Vercel Blob storage
+   - Shares the image URL to Farcaster via the Frame SDK
+
+## Technologies Used
+
+- Next.js 15 with App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- html2canvas for image generation
+- Vercel Blob Storage for image hosting
+- Farcaster Frame SDK for social sharing
 
 ## Learn More
 
