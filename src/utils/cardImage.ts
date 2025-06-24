@@ -224,6 +224,7 @@ export const COMPRESSION_PRESETS = {
 };
 
 // Generate a single combined card image with front on top and back below with spacing (3:2 aspect ratio)
+// Generate a single combined card image with front on top and back below with subtle overlap (3:2 aspect ratio)
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
   profilePicture: string,
@@ -300,19 +301,19 @@ export async function generateCombinedCardImageForFarcaster(
     const cardWidth = 400;
     const cardHeight = 250;
     
-    // Small gap between cards to show complete front card design
-    const spacing = 10; // Small spacing to show full front card with white border
+    // Reduced overlap - only overlapping the white border area
+    const overlap = 30; // Overlap amount - covers about half the white border
 
     // Center cards horizontally with slight offset for visual appeal
     const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
     const backCenterX = (finalCanvas.width - cardWidth) / 2 + 15;
 
     // Position front card at top
-    const frontY = 50;
-    // Position back card below with small spacing to show full front card
-    const backY = frontY + cardHeight + spacing;
+    const frontY = 60;
+    // Position back card with subtle overlap - only covering the bottom border area
+    const backY = frontY + cardHeight - overlap;
 
-    // Draw front card first (behind back card) with enhanced shadow
+    // Draw front card first with enhanced shadow
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
@@ -322,7 +323,7 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
     ctx.restore();
 
-    // Draw back card on top with stronger shadow for depth
+    // Draw back card on top with stronger shadow for depth, overlapping slightly
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
