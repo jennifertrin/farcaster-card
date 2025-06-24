@@ -223,7 +223,6 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// Generate a single combined card image with front on top and back below with spacing (3:2 aspect ratio)
 // Generate a single combined card image with front on top and back below with subtle overlap (3:2 aspect ratio)
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
@@ -710,7 +709,7 @@ export function generateCardFilename(
   // Ensure membershipId is sanitized
   const sanitizedMembershipId = membershipId.replace(/[^a-zA-Z0-9]/g, '');
   
-  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}.png`;
+  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}-10.png`;
   
   return filename;
 }
