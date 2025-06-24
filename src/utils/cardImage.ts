@@ -300,17 +300,17 @@ export async function generateCombinedCardImageForFarcaster(
     const cardWidth = 400;
     const cardHeight = 250;
     
-    // Very minimal overlap to show full gray area and white border
-    const overlap = 15; // Reduced overlap to show more of the front card
+    // Small gap between cards to show complete front card design
+    const spacing = 10; // Small spacing to show full front card with white border
 
     // Center cards horizontally with slight offset for visual appeal
     const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
     const backCenterX = (finalCanvas.width - cardWidth) / 2 + 15;
 
-    // Position front card higher to ensure full branding visibility
+    // Position front card at top
     const frontY = 50;
-    // Position back card lower to show full gray area and white border
-    const backY = frontY + cardHeight - overlap;
+    // Position back card below with small spacing to show full front card
+    const backY = frontY + cardHeight + spacing;
 
     // Draw front card first (behind back card) with enhanced shadow
     ctx.save();
