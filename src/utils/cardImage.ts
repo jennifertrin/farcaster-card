@@ -223,7 +223,7 @@ export const COMPRESSION_PRESETS = {
   }
 };
 
-// Generate a single combined card image with front on top and back on bottom (3:2 aspect ratio)
+// Generate a single combined card image with front on top and back centered below (3:2 aspect ratio)
 export async function generateCombinedCardImageForFarcaster(
   membershipId: string,
   profilePicture: string,
@@ -296,41 +296,38 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.fillStyle = '#f5f0ec';
     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-    // Calculate positioning for overlap effect
+    // Card dimensions
     const cardWidth = 400;
     const cardHeight = 250;
-    const overlap = 80; // Amount of overlap between cards
-    
-    // Position cards with overlap, focusing more on the backside
-    const frontY = 50; // Front card positioned higher
-    const backY = frontY + cardHeight - overlap; // Back card overlaps and extends lower
-    
+    const overlap = 30; // Amount of vertical overlap between cards
+
     // Center cards horizontally
     const centerX = (finalCanvas.width - cardWidth) / 2;
 
-    // Draw both cards with better quality
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    
-    // Draw front card (slightly smaller and more transparent to focus on back)
-    ctx.globalAlpha = 0.8;
-    
-    // Add shadow for front card
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 4;
-    ctx.drawImage(frontCanvas, centerX, frontY, cardWidth, cardHeight);
-    
-    // Reset shadow for back card
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    
-    // Draw back card (full opacity, more prominent)
+    // Position front card near the top, centered
+    const frontY = 60;
+    // Position back card centered below, overlapping the bottom of the front card
+    const backY = frontY + cardHeight - overlap;
+
+    // Draw front card (full opacity, shadow)
+    ctx.save();
     ctx.globalAlpha = 1.0;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 6;
+    ctx.drawImage(frontCanvas, centerX, frontY, cardWidth, cardHeight);
+    ctx.restore();
+
+    // Draw back card (full opacity, shadow, on top of front card, but lower)
+    ctx.save();
+    ctx.globalAlpha = 1.0;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.22)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 8;
     ctx.drawImage(backCanvas, centerX, backY, cardWidth, cardHeight);
+    ctx.restore();
 
     // Convert to Blob and return
     return new Promise((resolve, reject) => {
