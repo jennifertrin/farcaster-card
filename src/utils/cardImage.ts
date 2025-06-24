@@ -314,24 +314,24 @@ export async function generateCombinedCardImageForFarcaster(
     // This preserves all the "FARCASTER PRO MEMBER" branding
     const backY = frontY + cardHeight - overlap;
 
-    // Draw back card first (behind front card) with enhanced shadow
+    // Draw front card first (behind back card) with enhanced shadow
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
     ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetX = -3;
     ctx.shadowOffsetY = 12;
-    ctx.drawImage(backCanvas, backCenterX, backY, cardWidth, cardHeight);
+    ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
     ctx.restore();
 
-    // Draw front card on top with stronger shadow for depth
+    // Draw back card on top with stronger shadow for depth
     ctx.save();
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
     ctx.shadowBlur = 18;
-    ctx.shadowOffsetX = -2;
+    ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 8;
-    ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
+    ctx.drawImage(backCanvas, backCenterX, backY, cardWidth, cardHeight);
     ctx.restore();
 
     // Convert to Blob and return
