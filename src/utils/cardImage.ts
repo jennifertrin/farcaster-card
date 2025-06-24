@@ -401,9 +401,12 @@ export async function generateBackCardImageForFarcaster(
 }
 
 // Helper function to upload blob and get hosted URL
-export async function uploadCardImageBlob(blob: Blob): Promise<string> {
+export async function uploadCardImageBlob(blob: Blob, filename?: string): Promise<string> {
   const formData = new FormData();
-  formData.append('image', blob, 'card.png');
+  
+  // Use provided filename or generate a random one as fallback
+  const finalFilename = filename || `card-${Date.now()}-${Math.random().toString(36).substring(2, 15)}.png`;
+  formData.append('image', blob, finalFilename);
 
   // Upload to our server endpoint
   const response = await fetch('/api/upload-image-blob', {
@@ -697,4 +700,53 @@ export function dataURLToBlob(dataURL: string): Blob {
     u8arr[n] = bstr.charCodeAt(n);
   }
   return new Blob([u8arr], { type: mime });
+}
+
+// Generate unique filename for user's card based on their data
+export function generateCardFilename(
+  membershipId: string,
+  memberName: string,
+  profilePicture: string
+): string {
+  // Create a hash of the profile picture URL to detect changes
+  const profileHash = btoa(profilePicture).replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
+  
+  // Create a unique filename that changes if any user data changes
+  const sanitizedName = memberName
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase()
+    .substring(0, 20); // Limit length to avoid very long filenames
+  
+  // Ensure membershipId is sanitized
+  const sanitizedMembershipId = membershipId.replace(/[^a-zA-Z0-9]/g, '');
+  
+  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}.png`;
+  
+  return filename;
+}
+
+// Check if a card image already exists for this user
+export async function checkCardImageExists(filename: string): Promise<string | null> {
+  try {
+    // Try to construct the URL and check if it exists
+    // This assumes your Vercel Blob URLs follow a predictable pattern
+    const baseUrl = process.env.NEXT_PUBLIC_BLOB_BASE_URL || 'https://public.blob.vercel-storage.com';
+    const imageUrl = `${baseUrl}/${filename}`;
+    
+    console.log('Checking if image exists at:', imageUrl);
+    
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    
+    if (response.ok) {
+      console.log('Image found in cache:', imageUrl);
+      return imageUrl;
+    } else {
+      console.log('Image not found in cache (status:', response.status, ')');
+    }
+    
+    return null;
+  } catch (error) {
+    console.log('Error checking if image exists:', error);
+    return null;
+  }
 }

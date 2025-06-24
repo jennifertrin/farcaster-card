@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { uploadCardImageBlob, generateBackCardImageForFarcaster } from '../utils/cardImage';
+import { uploadCardImageBlob, generateBackCardImageForFarcaster, generateCardFilename, checkCardImageExists } from '../utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -64,24 +64,41 @@ export default function VirtualCard({
       setIsSharing(true);
       
       console.log('Starting share process...');
-      console.log('Generating back-side card image...');
       
-      // Generate only the back-side card image as a blob
-      const backImageBlob = await generateBackCardImageForFarcaster(
-        membershipId,
-        profilePicture,
-        memberName
-      );
+      // Generate unique filename for this user's card
+      const cardFilename = generateCardFilename(membershipId, memberName, profilePicture);
+      console.log('Generated card filename:', cardFilename);
       
-      console.log('Back image generated, uploading...');
+      // Check if the image already exists
+      console.log('Checking if card image already exists...');
+      const existingImageUrl = await checkCardImageExists(cardFilename);
       
-      // Upload the back image to get a hosted URL
-      const backImageUrl = await uploadCardImageBlob(backImageBlob);
+      let backImageUrl: string;
       
-      console.log('Back image uploaded successfully:', backImageUrl);
+      if (existingImageUrl) {
+        console.log('Card image already exists, using cached version:', existingImageUrl);
+        backImageUrl = existingImageUrl;
+      } else {
+        console.log('Card image not found, generating new back-side image...');
+        
+        // Generate only the back-side card image as a blob
+        const backImageBlob = await generateBackCardImageForFarcaster(
+          membershipId,
+          profilePicture,
+          memberName
+        );
+        
+        console.log('Back image generated, uploading...');
+        
+        // Upload the back image to get a hosted URL with the specific filename
+        backImageUrl = await uploadCardImageBlob(backImageBlob, cardFilename);
+        
+        console.log('Back image uploaded successfully:', backImageUrl);
+      }
+      
       console.log('Sharing card images to Farcaster...');
       
-      // Use static front image URL and uploaded back image URL
+      // Use static front image URL and back image URL
       const frontImageUrl = `${process.env.NEXT_PUBLIC_HOST || window.location.origin}/FarcasterPro.png`;
       
       // Share both images to Farcaster

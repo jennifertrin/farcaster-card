@@ -31,6 +31,9 @@ BLOB_READ_WRITE_TOKEN=your_vercel_blob_token_here
 # Required for Farcaster Frame metadata
 NEXT_PUBLIC_HOST=https://your-domain.com
 
+# Optional: Base URL for Vercel Blob storage (for image caching)
+NEXT_PUBLIC_BLOB_BASE_URL=https://public.blob.vercel-storage.com
+
 # For development
 # NEXT_PUBLIC_HOST=http://localhost:3000
 ```
@@ -63,9 +66,16 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 2. **Interactive Experience**: Users can flip the card to see both front and back
 3. **Image Sharing**: When users click "Share Card", the app:
    - Uses a static front-side image (same for all users)
-   - Generates a high-quality image of the back-side with user's personal information
-   - Uploads only the back-side image to Vercel Blob storage
+   - Generates a unique filename based on user data (membership ID, name, profile picture)
+   - Checks if the image already exists in storage (prevents duplicate uploads)
+   - If not found, generates and uploads only the back-side image with user's personal information
    - Shares both front and back images to Farcaster via the Frame SDK
+
+**Caching Benefits:**
+- Prevents DDoS of blob storage from repeated shares
+- Faster sharing for returning users
+- Automatic cache invalidation when user data changes
+- Cost-effective storage usage
 
 ## Technologies Used
 

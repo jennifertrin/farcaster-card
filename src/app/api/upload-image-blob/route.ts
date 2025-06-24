@@ -35,11 +35,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File too large. Max size is 10MB' }, { status: 400 });
     }
 
-    // Create filename with timestamp to avoid collisions
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 15);
-    const extension = file.name.split('.').pop() || 'png';
-    const filename = `farcaster-card-${timestamp}-${randomId}.${extension}`;
+    // Use the filename from the form data or generate one if not provided
+    const providedFilename = file.name;
+    const extension = providedFilename.split('.').pop() || 'png';
+    
+    // If the filename looks like it was auto-generated (has timestamp), use it as is
+    // Otherwise, use the provided filename
+    const filename = providedFilename.includes('farcaster-card-') ? 
+      providedFilename : 
+      `farcaster-card-${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${extension}`;
     
     console.log('Attempting to upload to Vercel Blob:', filename);
 
