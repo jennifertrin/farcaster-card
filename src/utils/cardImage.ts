@@ -678,7 +678,7 @@ export function generateCardFilename(
   // Ensure membershipId is sanitized
   const sanitizedMembershipId = membershipId.replace(/[^a-zA-Z0-9]/g, '');
   
-  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}-10.png`;
+  const filename = `farcaster-card-${sanitizedMembershipId}-${sanitizedName}-${profileHash}-20.png`;
   
   return filename;
 }
