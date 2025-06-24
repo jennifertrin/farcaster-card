@@ -743,29 +743,3 @@ export function generateCardFilename(
   
   return filename;
 }
-
-// Check if a card image already exists for this user
-export async function checkCardImageExists(filename: string): Promise<string | null> {
-  try {
-    // Try to construct the URL and check if it exists
-    // This assumes your Vercel Blob URLs follow a predictable pattern
-    const baseUrl = process.env.NEXT_PUBLIC_BLOB_BASE_URL || 'https://public.blob.vercel-storage.com';
-    const imageUrl = `${baseUrl}/${filename}`;
-    
-    console.log('Checking if image exists at:', imageUrl);
-    
-    const response = await fetch(imageUrl, { method: 'HEAD' });
-    
-    if (response.ok) {
-      console.log('Image found in cache:', imageUrl);
-      return imageUrl;
-    } else {
-      console.log('Image not found in cache (status:', response.status, ')');
-    }
-    
-    return null;
-  } catch (error) {
-    console.log('Error checking if image exists:', error);
-    return null;
-  }
-}

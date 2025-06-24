@@ -45,6 +45,27 @@ export async function POST(request: NextRequest) {
       providedFilename : 
       `farcaster-card-${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${extension}`;
     
+    console.log('Checking if file already exists:', filename);
+
+    // Check if file already exists in Vercel Blob
+    try {
+      const { head } = await import('@vercel/blob');
+      const existingBlob = await head(filename);
+      
+      if (existingBlob) {
+        console.log('File already exists, returning existing URL:', existingBlob.url);
+        return NextResponse.json({ 
+          url: existingBlob.url,
+          filename: filename,
+          size: existingBlob.size,
+          cached: true
+        });
+      }
+    } catch (headError) {
+      // File doesn't exist, continue with upload
+      console.log(headError,'File does not exist, proceeding with upload');
+    }
+    
     console.log('Attempting to upload to Vercel Blob:', filename);
 
     // Upload to Vercel Blob
@@ -59,7 +80,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         url: blob.url,
         filename: filename,
-        size: file.size
+        size: file.size,
+        cached: false
       });
     } catch (blobError) {
       console.error('Vercel Blob upload error:', {

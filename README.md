@@ -31,9 +31,6 @@ BLOB_READ_WRITE_TOKEN=your_vercel_blob_token_here
 # Required for Farcaster Frame metadata
 NEXT_PUBLIC_HOST=https://your-domain.com
 
-# Optional: Base URL for Vercel Blob storage (for image caching)
-NEXT_PUBLIC_BLOB_BASE_URL=https://public.blob.vercel-storage.com
-
 # For development
 # NEXT_PUBLIC_HOST=http://localhost:3000
 ```
@@ -66,16 +63,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 2. **Interactive Experience**: Users can flip the card to see both front and back
 3. **Image Sharing**: When users click "Share Card", the app:
    - Generates a unique filename based on user data (membership ID, name, profile picture)
-   - Checks if the image already exists in storage (prevents duplicate uploads)
-   - If not found, generates a single 3:2 aspect ratio image with front card on top and back card on bottom (with overlap to focus on the backside)
-   - Uploads the combined image to Vercel Blob storage
+   - Generates a single 3:2 aspect ratio image with front card on top and back card on bottom (with overlap to focus on the backside)
+   - Uploads the image to Vercel Blob storage (server automatically checks for duplicates and returns existing URL if found)
    - Shares the single combined image to Farcaster via the Frame SDK
 
 **Caching Benefits:**
-- Prevents DDoS of blob storage from repeated shares
-- Faster sharing for returning users
+- Server-side duplicate detection prevents overwrite errors
 - Automatic cache invalidation when user data changes
 - Cost-effective storage usage
+- No client-side network requests for existence checking
 
 **Visual Design:**
 - 3:2 aspect ratio for optimal social media display

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
-import { uploadCardImageBlob, generateCombinedCardImageForFarcaster, generateCardFilename, checkCardImageExists } from '../utils/cardImage';
+import { uploadCardImageBlob, generateCombinedCardImageForFarcaster, generateCardFilename } from '../utils/cardImage';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -69,33 +69,21 @@ export default function VirtualCard({
       const cardFilename = generateCardFilename(membershipId, memberName, profilePicture);
       console.log('Generated card filename:', cardFilename);
       
-      // Check if the image already exists
-      console.log('Checking if card image already exists...');
-      const existingImageUrl = await checkCardImageExists(cardFilename);
+      // Generate the combined card image as a blob (front on top, back on bottom)
+      console.log('Generating combined card image...');
+      const cardImageBlob = await generateCombinedCardImageForFarcaster(
+        membershipId,
+        profilePicture,
+        memberName
+      );
       
-      let cardImageUrl: string;
+      console.log('Combined card image generated, uploading...');
       
-      if (existingImageUrl) {
-        console.log('Card image already exists, using cached version:', existingImageUrl);
-        cardImageUrl = existingImageUrl;
-      } else {
-        console.log('Card image not found, generating new combined image...');
-        
-        // Generate the combined card image as a blob (front on top, back on bottom)
-        const cardImageBlob = await generateCombinedCardImageForFarcaster(
-          membershipId,
-          profilePicture,
-          memberName
-        );
-        
-        console.log('Combined card image generated, uploading...');
-        
-        // Upload the combined image to get a hosted URL with the specific filename
-        cardImageUrl = await uploadCardImageBlob(cardImageBlob, cardFilename);
-        
-        console.log('Card image uploaded successfully:', cardImageUrl);
-      }
+      // Upload the combined image to get a hosted URL with the specific filename
+      // The server will check if the file already exists and return the existing URL if found
+      const cardImageUrl = await uploadCardImageBlob(cardImageBlob, cardFilename);
       
+      console.log('Card image uploaded successfully:', cardImageUrl);
       console.log('Sharing card image to Farcaster...');
       
       // Share the single combined image to Farcaster
