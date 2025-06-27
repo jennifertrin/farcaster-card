@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { sdk } from '@farcaster/frame-sdk';
 import { uploadCardImageBlob, generateCombinedCardImageForFarcaster, generateCardFilename } from '../utils/cardImage';
+import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { prepareMintTransaction } from '../utils/nftMinting';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -21,7 +23,15 @@ export default function VirtualCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintError, setMintError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);  
+
+  // Wallet hooks
+  const { isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { writeContract, data: hash } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -124,6 +134,44 @@ export default function VirtualCard({
       }
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const handleMintNFT = async () => {
+    try {
+      setIsMinting(true);
+      setMintError(null);
+
+      // Check if wallet is connected
+      if (!isConnected) {
+        await connect({ connector: connectors[0] });
+        return;
+      }
+
+      // Generate the card image for NFT metadata
+      const cardFilename = generateCardFilename(membershipId, memberName, profilePicture);
+      const cardImageBlob = await generateCombinedCardImageForFarcaster(
+        membershipId,
+        profilePicture,
+        memberName
+      );
+      
+      // Upload the image to get a URL
+      const cardImageUrl = await uploadCardImageBlob(cardImageBlob, cardFilename);
+      
+      // For now, we'll use the image URL as the token URI
+      // In a production environment, you'd upload the metadata to IPFS or similar
+      const tokenURI = cardImageUrl;
+
+      // Prepare and execute the mint transaction
+      const mintConfig = prepareMintTransaction(tokenURI);
+      writeContract(mintConfig);
+
+    } catch (error) {
+      console.error('Error in mint process:', error);
+      setMintError(error instanceof Error ? error.message : 'Failed to mint NFT');
+    } finally {
+      setIsMinting(false);
     }
   };
 
@@ -287,6 +335,31 @@ export default function VirtualCard({
         >
           {isSharing ? 'Sharing...' : 'Share Card'}
         </button>
+      )}
+
+      {/* Mint NFT button */}
+      {!error && (
+        <button
+          onClick={handleMintNFT}
+          disabled={isMinting || isConfirming}
+          className="mt-2 w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isMinting ? 'Preparing...' : isConfirming ? 'Confirming...' : isSuccess ? 'Minted Successfully!' : 'Mint NFT (0.005 ETH)'}
+        </button>
+      )}
+
+      {/* Mint error message */}
+      {mintError && (
+        <div className="mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+          {mintError}
+        </div>
+      )}
+
+      {/* Mint success message */}
+      {isSuccess && (
+        <div className="mt-2 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
+          NFT minted successfully! Transaction hash: {hash?.slice(0, 10)}...
+        </div>
       )}
       
       {/* Interactive hint */}

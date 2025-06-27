@@ -1,105 +1,119 @@
 # Farcaster Pro Membership Card
 
-A virtual membership card generator for Farcaster users, featuring an interactive card that can be flipped and shared as an image.
+A virtual membership card generator for Farcaster users with NFT minting capabilities.
 
 ## Features
 
-- Interactive card with flip animation
-- Automatic card image generation
-- Share card images directly to Farcaster
-- Costco-style membership card design
-- Profile picture integration
+- **Virtual Membership Cards**: Generate personalized Farcaster Pro membership cards
+- **Card Sharing**: Share your card directly to Farcaster
+- **NFT Minting**: Mint your card as an NFT on Ethereum for 0.005 ETH
+- **Wallet Integration**: Seamless wallet connection using Farcaster Frame SDK
 
-## Getting Started
+## NFT Minting
 
-First, install the dependencies:
+Users can now mint their Farcaster Pro membership card as an NFT on Ethereum:
+
+- **Mint Price**: 0.005 ETH per NFT
+- **Blockchain**: Ethereum Mainnet
+- **Standard**: ERC-721
+- **Token Name**: Farcaster Pro Membership Card
+- **Token Symbol**: FARPRO
+
+### How to Mint
+
+1. Generate your virtual membership card
+2. Click the "Mint NFT" button below the "Share Card" button
+3. Connect your wallet if not already connected
+4. Confirm the transaction in your wallet
+5. Your NFT will be minted with your card image as the token URI
+
+## Smart Contract
+
+The NFT minting functionality uses a custom ERC-721 smart contract:
+
+- **Contract**: `FarcasterProNFT.sol`
+- **Features**: 
+  - Payable mint function (0.005 ETH)
+  - Custom token URIs
+  - Owner withdrawal function
+  - OpenZeppelin secure implementation
+
+### Deployment
+
+See `DEPLOYMENT_INSTRUCTIONS.md` for detailed deployment steps.
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+- Ethereum wallet (for NFT minting)
+
+### Installation
 
 ```bash
 npm install
-# or
-yarn install
 ```
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory with the following variables:
+Create a `.env.local` file:
 
-```bash
-# Required for Vercel Blob Storage (for image uploads)
-BLOB_READ_WRITE_TOKEN=your_vercel_blob_token_here
-
-# Required for Farcaster Frame metadata
+```env
 NEXT_PUBLIC_HOST=https://your-domain.com
-
-# For development
-# NEXT_PUBLIC_HOST=http://localhost:3000
 ```
 
-### Setting up Vercel Blob Storage
-
-1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
-2. Select your project
-3. Go to the "Storage" tab
-4. Create a new Blob store
-5. Copy the `BLOB_READ_WRITE_TOKEN` and add it to your `.env.local` file
-
-Then, run the development server:
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build
 
-## How it Works
+```bash
+npm run build
+```
 
-1. **Card Generation**: The app generates a virtual membership card with the user's Farcaster profile information
-2. **Interactive Experience**: Users can flip the card to see both front and back
-3. **Image Sharing**: When users click "Share Card", the app:
-   - Generates a unique filename based on user data (membership ID, name, profile picture)
-   - Generates a single 3:2 aspect ratio image with front card on top and back card on bottom (with overlap to focus on the backside)
-   - Uploads the image to Vercel Blob storage (server automatically checks for duplicates and returns existing URL if found)
-   - Shares the single combined image to Farcaster via the Frame SDK
+## Dependencies
 
-**Caching Benefits:**
-- Server-side duplicate detection prevents overwrite errors
-- Automatic cache invalidation when user data changes
-- Cost-effective storage usage
-- No client-side network requests for existence checking
+- **Next.js 15**: React framework
+- **Farcaster Frame SDK**: For Farcaster integration
+- **Wagmi**: For Ethereum wallet interactions
+- **Viem**: Ethereum library
+- **Tailwind CSS**: Styling
 
-**Visual Design:**
-- 3:2 aspect ratio for optimal social media display
-- Front card positioned on top with slight transparency
-- Back card positioned below with overlap, more prominent
-- Focus on the personalized back-side information
+## Project Structure
 
-## Technologies Used
+```
+src/
+├── app/                 # Next.js app directory
+├── components/          # React components
+│   ├── VirtualCard.tsx # Main card component with NFT minting
+│   └── WagmiProvider.tsx # Wallet provider
+├── lib/
+│   └── wagmi.ts        # Wagmi configuration
+├── utils/
+│   ├── cardImage.ts    # Card image generation
+│   └── nftMinting.ts   # NFT minting utilities
+└── middleware.ts       # Farcaster middleware
 
-- Next.js 15 with App Router
-- React 19
-- TypeScript
-- Tailwind CSS
-- html2canvas for image generation
-- Vercel Blob Storage for image hosting
-- Farcaster Frame SDK for social sharing
+contracts/
+└── FarcasterProNFT.sol # NFT smart contract
 
-## Learn More
+scripts/
+└── deploy.js           # Contract deployment script
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License
