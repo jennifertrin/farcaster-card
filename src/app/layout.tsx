@@ -44,6 +44,7 @@ export const metadata: Metadata = {
     "og:image": process.env.NEXT_PUBLIC_HOST + "/FarcasterPro.png",
   },
 };
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,9 +55,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <WagmiProvider>
-          {children}
-        </WagmiProvider>
+          <WagmiProvider>
+            {children}
+          </WagmiProvider>
       </body>
     </html>
   );
