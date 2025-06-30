@@ -296,10 +296,10 @@ export async function generateCombinedCardImageForFarcaster(
       })
     ]);
 
-    // Create final combined canvas with 3:2 aspect ratio
+    // Create final combined canvas with minimal side whitespace
     const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = 900;  // 3:2 aspect ratio
-    finalCanvas.height = 600;
+    finalCanvas.width = 420;  // Only 20px wider than card
+    finalCanvas.height = 480; // Enough for two cards with overlap
     const ctx = finalCanvas.getContext('2d');
 
     if (!ctx) {
@@ -313,17 +313,14 @@ export async function generateCombinedCardImageForFarcaster(
     // Card dimensions
     const cardWidth = 400;
     const cardHeight = 250;
-    
-    // Reduced overlap - only overlapping the white border area
-    const overlap = 10; // Overlap amount - covers about half the white border
+    const overlap = 10; // Overlap amount
 
-    // Center cards horizontally with slight offset for visual appeal
-    const frontCenterX = (finalCanvas.width - cardWidth) / 2 - 15;
-    const backCenterX = (finalCanvas.width - cardWidth) / 2 + 15;
+    // Center cards horizontally with minimal margin
+    const cardX = (finalCanvas.width - cardWidth) / 2; // 10px margin on each side
 
     // Position front card at top
-    const frontY = 60;
-    // Position back card with subtle overlap - only covering the bottom border area
+    const frontY = 30;
+    // Position back card with subtle overlap
     const backY = frontY + cardHeight - overlap;
 
     // Draw front card first with enhanced shadow
@@ -333,7 +330,7 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.shadowBlur = 20;
     ctx.shadowOffsetX = -3;
     ctx.shadowOffsetY = 12;
-    ctx.drawImage(frontCanvas, frontCenterX, frontY, cardWidth, cardHeight);
+    ctx.drawImage(frontCanvas, cardX, frontY, cardWidth, cardHeight);
     ctx.restore();
 
     // Draw back card on top with stronger shadow for depth, overlapping slightly
@@ -343,7 +340,7 @@ export async function generateCombinedCardImageForFarcaster(
     ctx.shadowBlur = 18;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 8;
-    ctx.drawImage(backCanvas, backCenterX, backY, cardWidth, cardHeight);
+    ctx.drawImage(backCanvas, cardX, backY, cardWidth, cardHeight);
     ctx.restore();
 
     // Convert to Blob and return
