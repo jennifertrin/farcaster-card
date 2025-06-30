@@ -16,10 +16,12 @@ interface User {
 const PageLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="flex min-h-screen flex-col items-center justify-center p-8 font-sans bg-purple-50">
     <main className="flex flex-col items-center gap-8">
-      <h1 className="text-3xl font-bold tracking-widest text-center text-purple-700 drop-shadow-sm font-league-spartan">
-        Farcaster Pro<br />Membership Card
-      </h1>
-      <p className="text-center text-purple-600 text-sm mt-2">In beta</p>
+      <div className="flex flex-col items-center">
+        <h1 className="text-3xl font-bold tracking-widest text-center text-purple-700 drop-shadow-sm font-league-spartan">
+          Farcaster Pro<br />Membership Card
+        </h1>
+        <p className="text-center text-purple-600 text-sm mt-2">In beta</p>
+      </div>
       {children}
     </main>
   </div>
