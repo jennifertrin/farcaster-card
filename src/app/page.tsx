@@ -19,6 +19,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => (
       <h1 className="text-3xl font-bold tracking-widest text-center text-purple-700 drop-shadow-sm font-league-spartan">
         Farcaster Pro<br />Membership Card
       </h1>
+      <p className="text-center text-purple-600 text-sm mt-2">In beta</p>
       {children}
     </main>
   </div>

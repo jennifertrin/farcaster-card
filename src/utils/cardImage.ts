@@ -114,6 +114,22 @@ export function createStaticCardElements(
   return { frontElement, backElement };
 }
 
+// Helper function to create isolated container for card generation
+function createIsolatedContainer(userId: string): HTMLDivElement {
+  const container = document.createElement('div');
+  container.id = `card-generation-${userId}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  container.style.cssText = `
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    pointer-events: none;
+  `;
+  return container;
+}
+
 // Helper function to wait for render
 function waitForRender(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -232,6 +248,7 @@ export async function generateCombinedCardImageForFarcaster(
 ): Promise<Blob> {
   let frontElement: HTMLDivElement | null = null;
   let backElement: HTMLDivElement | null = null;
+  let isolatedContainer: HTMLDivElement | null = null;
 
   try {
     // Preload images first
@@ -250,17 +267,13 @@ export async function generateCombinedCardImageForFarcaster(
     frontElement = front;
     backElement = back;
 
-    // Add to DOM temporarily (positioned off-screen)
-    frontElement.style.position = 'absolute';
-    frontElement.style.left = '-9999px';
-    frontElement.style.top = '-9999px';
+    // Create isolated container for this user's card generation
+    isolatedContainer = createIsolatedContainer(membershipId);
     
-    backElement.style.position = 'absolute';
-    backElement.style.left = '-9999px';
-    backElement.style.top = '-9999px';
-    
-    document.body.appendChild(frontElement);
-    document.body.appendChild(backElement);
+    // Add elements to isolated container instead of body
+    isolatedContainer.appendChild(frontElement);
+    isolatedContainer.appendChild(backElement);
+    document.body.appendChild(isolatedContainer);
 
     // Wait for elements to render
     await waitForRender(200);
@@ -348,12 +361,9 @@ export async function generateCombinedCardImageForFarcaster(
     console.error('Error generating combined card image:', error);
     throw new Error(`Failed to generate card image: ${(error as Error).message}`);
   } finally {
-    // Clean up DOM elements
-    if (frontElement && frontElement.parentNode) {
-      frontElement.parentNode.removeChild(frontElement);
-    }
-    if (backElement && backElement.parentNode) {
-      backElement.parentNode.removeChild(backElement);
+    // Clean up DOM elements - remove the entire isolated container
+    if (isolatedContainer && isolatedContainer.parentNode) {
+      isolatedContainer.parentNode.removeChild(isolatedContainer);
     }
   }
 }
@@ -390,6 +400,7 @@ export async function generateCombinedCardImageStatic(
 ): Promise<string> {
   let frontElement: HTMLDivElement | null = null;
   let backElement: HTMLDivElement | null = null;
+  let isolatedContainer: HTMLDivElement | null = null;
 
   try {
     // Preload images first
@@ -408,17 +419,13 @@ export async function generateCombinedCardImageStatic(
     frontElement = front;
     backElement = back;
 
-    // Add to DOM temporarily (positioned off-screen)
-    frontElement.style.position = 'absolute';
-    frontElement.style.left = '-9999px';
-    frontElement.style.top = '-9999px';
+    // Create isolated container for this user's card generation
+    isolatedContainer = createIsolatedContainer(membershipId);
     
-    backElement.style.position = 'absolute';
-    backElement.style.left = '-9999px';
-    backElement.style.top = '-9999px';
-    
-    document.body.appendChild(frontElement);
-    document.body.appendChild(backElement);
+    // Add elements to isolated container instead of body
+    isolatedContainer.appendChild(frontElement);
+    isolatedContainer.appendChild(backElement);
+    document.body.appendChild(isolatedContainer);
 
     // Wait for elements to render
     await waitForRender(200);
@@ -476,12 +483,9 @@ export async function generateCombinedCardImageStatic(
     console.error('Error generating combined card image:', error);
     throw new Error(`Failed to generate card image: ${(error as Error).message}`);
   } finally {
-    // Clean up DOM elements
-    if (frontElement && frontElement.parentNode) {
-      frontElement.parentNode.removeChild(frontElement);
-    }
-    if (backElement && backElement.parentNode) {
-      backElement.parentNode.removeChild(backElement);
+    // Clean up DOM elements - remove the entire isolated container
+    if (isolatedContainer && isolatedContainer.parentNode) {
+      isolatedContainer.parentNode.removeChild(isolatedContainer);
     }
   }
 }
