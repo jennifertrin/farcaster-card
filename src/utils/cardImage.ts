@@ -298,8 +298,24 @@ export async function generateCombinedCardImageForFarcaster(
 
     // Create final combined canvas with minimal side whitespace
     const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = 420;  // Only 20px wider than card
-    finalCanvas.height = 480; // Enough for two cards with overlap
+    // Set margin for all sides
+    const margin = 10;
+    // Card dimensions
+    const cardWidth = 400;
+    const cardHeight = 250;
+    const overlap = 10; // Overlap amount
+
+    // Calculate canvas height for equal top/bottom whitespace
+    finalCanvas.width = cardWidth + 2 * margin; // 420
+    finalCanvas.height = cardHeight * 2 - overlap + 2 * margin; // 490 + 20 = 510
+
+    // Center cards horizontally
+    const cardX = margin;
+    // Position front card at top margin
+    const frontY = margin;
+    // Position back card with overlap
+    const backY = margin + cardHeight - overlap;
+
     const ctx = finalCanvas.getContext('2d');
 
     if (!ctx) {
@@ -309,19 +325,6 @@ export async function generateCombinedCardImageForFarcaster(
     // Set background
     ctx.fillStyle = '#f5f0ec';
     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-
-    // Card dimensions
-    const cardWidth = 400;
-    const cardHeight = 250;
-    const overlap = 10; // Overlap amount
-
-    // Center cards horizontally with minimal margin
-    const cardX = (finalCanvas.width - cardWidth) / 2; // 10px margin on each side
-
-    // Position front card at top
-    const frontY = 30;
-    // Position back card with subtle overlap
-    const backY = frontY + cardHeight - overlap;
 
     // Draw front card first with enhanced shadow
     ctx.save();
