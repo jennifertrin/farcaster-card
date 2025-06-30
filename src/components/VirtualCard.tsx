@@ -98,7 +98,7 @@ export default function VirtualCard({
       
       // Share the single combined image to Farcaster
       const result = await sdk.actions.composeCast({
-        text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\n\n____\nMember Name: ${memberName}\nFID: ${membershipId}\n_____\nGet your own here:\nhttps://farcard.xyz`,
+        text: `Why do you need a Costco Membership Card when you can have a Farcaster Pro Membership Card? 💜\n____\nMember Name: ${memberName}\nFID: ${membershipId}\n_____\nGet your own here:\nhttps://farcard.xyz `,
         embeds: [cardImageUrl] // Share the single combined image
       });
       
