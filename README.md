@@ -6,26 +6,35 @@ A virtual membership card generator for Farcaster users with NFT minting capabil
 
 - **Virtual Membership Cards**: Generate personalized Farcaster Pro membership cards
 - **Card Sharing**: Share your card directly to Farcaster
-- **NFT Minting**: Mint your card as an NFT on Ethereum for 0.005 ETH
-- **Wallet Integration**: Seamless wallet connection using Farcaster Frame SDK
+- **Dual Blockchain NFT Minting**: Mint your card as an NFT on both Ethereum (0.005 ETH) and Solana (0.01 SOL)
+- **Multi-Wallet Integration**: Seamless wallet connection for both Ethereum and Solana chains
 
 ## NFT Minting
 
-Users can now mint their Farcaster Pro membership card as an NFT on Ethereum:
+Users can now mint their Farcaster Pro membership card as an NFT on both Ethereum and Solana:
 
+### Ethereum NFT Minting
 - **Mint Price**: 0.005 ETH per NFT
 - **Blockchain**: Ethereum Mainnet
 - **Standard**: ERC-721
 - **Token Name**: Farcaster Pro Membership Card
 - **Token Symbol**: FARPRO
 
+### Solana NFT Minting
+- **Mint Price**: 0.01 SOL per NFT
+- **Blockchain**: Solana Devnet/Mainnet
+- **Standard**: SPL Token with Metaplex metadata
+- **Token Name**: Farcaster Pro Card - [Member Name]
+- **Token Symbol**: FARPRO
+
 ### How to Mint
 
 1. Generate your virtual membership card
-2. Click the "Mint NFT" button below the "Share Card" button
-3. Connect your wallet if not already connected
-4. Confirm the transaction in your wallet
-5. Your NFT will be minted with your card image as the token URI
+2. Choose your preferred blockchain (Ethereum or Solana)
+3. Connect the appropriate wallet (MetaMask for Ethereum, Farcaster wallet for Solana)
+4. Click the mint button for your chosen blockchain
+5. Confirm the transaction in your wallet
+6. Your NFT will be minted with your card image as the token URI
 
 ## Smart Contract
 
@@ -82,6 +91,9 @@ npm run build
 - **Farcaster Frame SDK**: For Farcaster integration
 - **Wagmi**: For Ethereum wallet interactions
 - **Viem**: Ethereum library
+- **Solana Web3.js**: For Solana blockchain interactions
+- **Anchor**: For Solana program development
+- **Metaplex**: For Solana NFT metadata
 - **Tailwind CSS**: Styling
 
 ## Project Structure
@@ -90,20 +102,29 @@ npm run build
 src/
 ├── app/                 # Next.js app directory
 ├── components/          # React components
-│   ├── VirtualCard.tsx # Main card component with NFT minting
-│   └── WagmiProvider.tsx # Wallet provider
+│   ├── VirtualCard.tsx # Main card component with dual NFT minting
+│   ├── WagmiProvider.tsx # Ethereum wallet provider
+│   └── SolanaWalletProvider.tsx # Solana wallet provider
 ├── lib/
 │   └── wagmi.ts        # Wagmi configuration
 ├── utils/
 │   ├── cardImage.ts    # Card image generation
-│   └── nftMinting.ts   # NFT minting utilities
+│   ├── nftMinting.ts   # Ethereum NFT minting utilities
+│   └── solanaMinting.ts # Solana NFT minting utilities
 └── middleware.ts       # Farcaster middleware
 
 contracts/
-└── FarcasterProNFT.sol # NFT smart contract
+└── FarcasterProNFT.sol # Ethereum NFT smart contract
+
+programs/
+└── farcaster-pro-nft/  # Solana NFT program (Anchor)
+    ├── src/
+    │   └── lib.rs      # Main program logic
+    └── Cargo.toml      # Program dependencies
 
 scripts/
-└── deploy.js           # Contract deployment script
+├── deploy.js           # Ethereum contract deployment
+└── deploy-solana.js    # Solana program deployment
 ```
 
 ## Contributing
