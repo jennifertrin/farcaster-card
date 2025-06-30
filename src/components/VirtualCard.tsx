@@ -349,7 +349,7 @@ export default function VirtualCard({
               disabled={isMinting || isConfirming}
               className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isMinting ? 'Preparing...' : isConfirming ? 'Confirming...' : isSuccess ? 'Minted Successfully!' : `Mint on Ethereum (0.005 ETH)`}
+              {isMinting ? 'Preparing...' : isConfirming ? 'Confirming...' : isSuccess ? 'Minted Successfully!' : `Mint on Base (0.005 ETH)`}
             </button>
             
             {mintError && (
