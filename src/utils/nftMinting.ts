@@ -23,11 +23,11 @@ export const NFT_CONTRACT_ABI = [
   }
 ] as const
 
-// Contract address - you'll need to deploy this contract
-// This is a placeholder - replace with your actual deployed contract address
-export const NFT_CONTRACT_ADDRESS = '0xE9384f01884C23E2E984c4846cDD86CE3E56024a'
+// Contract address on Base network - you'll need to deploy this contract
+// This is a placeholder - replace with your actual deployed contract address on Base
+export const NFT_CONTRACT_ADDRESS = '0x259bbCb5E405b35DD9eFc06611720a2C5784D43b'
 
-// Mint price in ETH
+// Mint price in ETH (same on Base as it's an L2)
 export const MINT_PRICE = parseEther('0.005')
 
 // Function to prepare mint transaction

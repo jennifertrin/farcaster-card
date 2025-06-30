@@ -6,9 +6,6 @@ import { sdk } from '@farcaster/frame-sdk';
 import { uploadCardImageBlob, generateCombinedCardImageForFarcaster, generateCardFilename } from '../utils/cardImage';
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { prepareMintTransaction } from '../utils/nftMinting';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { mintSolanaNFT, prepareSolanaMintTransaction, SOLANA_MINT_PRICE, getSolanaProvider } from '../utils/solanaMinting';
-import { Keypair } from '@solana/web3.js';
 
 interface VirtualCardProps {
   membershipId: string;
@@ -28,10 +25,6 @@ export default function VirtualCard({
   const [isSharing, setIsSharing] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   const [mintError, setMintError] = useState<string | null>(null);
-  const [mintType, setMintType] = useState<'ethereum' | 'solana' | null>(null);
-  const [isMintingSolana, setIsMintingSolana] = useState(false);
-  const [solanaMintError, setSolanaMintError] = useState<string | null>(null);
-  const [solanaMintSuccess, setSolanaMintSuccess] = useState<{ mint: string; signature: string } | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);  
 
   // Ethereum wallet hooks
@@ -39,9 +32,6 @@ export default function VirtualCard({
   const { connect, connectors } = useConnect();
   const { writeContract, data: hash } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
-
-  // Solana wallet hooks
-  const { publicKey, signTransaction, connected: solanaConnected } = useWallet();
 
   // Auto-flip sequence: flip to back after 1s, then to front after 2s, then show hint
   // Only run auto-flip if there's no error
@@ -151,7 +141,6 @@ export default function VirtualCard({
     try {
       setIsMinting(true);
       setMintError(null);
-      setMintType('ethereum');
 
       // Check if wallet is connected
       if (!isConnected) {
@@ -183,68 +172,6 @@ export default function VirtualCard({
       setMintError(error instanceof Error ? error.message : 'Failed to mint NFT');
     } finally {
       setIsMinting(false);
-    }
-  };
-
-  const handleMintSolanaNFT = async () => {
-    try {
-      setIsMintingSolana(true);
-      setSolanaMintError(null);
-      setSolanaMintSuccess(null);
-      setMintType('solana');
-
-      // Check if Solana wallet is connected
-      if (!solanaConnected || !publicKey || !signTransaction) {
-        alert('Please connect your Solana wallet first');
-        return;
-      }
-
-      // Get Solana provider from Farcaster SDK
-      const solanaProvider = getSolanaProvider();
-      if (!solanaProvider) {
-        alert('Failed to get Solana provider');
-        return;
-      }
-
-      // Generate the card image for NFT metadata
-      const cardFilename = generateCardFilename(membershipId, memberName, profilePicture);
-      const cardImageBlob = await generateCombinedCardImageForFarcaster(
-        membershipId,
-        profilePicture,
-        memberName
-      );
-      
-      // Upload the image to get a URL
-      const cardImageUrl = await uploadCardImageBlob(cardImageBlob, cardFilename);
-      
-      // Prepare Solana mint transaction
-      const solanaMintConfig = prepareSolanaMintTransaction(cardImageUrl, membershipId, memberName);
-      
-      // Create a keypair from the connected wallet's public key
-      // Note: In a real implementation, you would use the wallet's signTransaction method
-      const payerKeypair = Keypair.generate();
-      
-      // Mint the NFT using the connected wallet
-      const result = await mintSolanaNFT(
-        {
-          name: solanaMintConfig.metadata.name,
-          symbol: solanaMintConfig.metadata.symbol,
-          uri: cardImageUrl, // For now using image URL directly
-          sellerFeeBasisPoints: 500, // 5% royalty
-        },
-        payerKeypair
-      );
-
-      setSolanaMintSuccess({
-        mint: result.mint.toString(),
-        signature: result.signature
-      });
-
-    } catch (error) {
-      console.error('Error in Solana mint process:', error);
-      setSolanaMintError(error instanceof Error ? error.message : 'Failed to mint Solana NFT');
-    } finally {
-      setIsMintingSolana(false);
     }
   };
 
@@ -434,31 +361,6 @@ export default function VirtualCard({
             {isSuccess && (
               <div className="p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
                 Ethereum NFT minted successfully! Transaction hash: {hash?.slice(0, 10)}...
-              </div>
-            )}
-          </div>
-
-          {/* Solana Minting */}
-          <div className="space-y-2">
-            <button
-              onClick={handleMintSolanaNFT}
-              disabled={isMintingSolana || !solanaConnected}
-              className="w-full py-2 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isMintingSolana ? 'Minting...' : !solanaConnected ? 'Connect Farcaster Wallet' : `Mint on Solana (${SOLANA_MINT_PRICE} SOL)`}
-            </button>
-            
-            {solanaMintError && (
-              <div className="p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-                {solanaMintError}
-              </div>
-            )}
-            
-            {solanaMintSuccess && (
-              <div className="p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
-                Solana NFT minted successfully!<br />
-                Mint: {solanaMintSuccess.mint.slice(0, 10)}...<br />
-                Signature: {solanaMintSuccess.signature.slice(0, 10)}...
               </div>
             )}
           </div>

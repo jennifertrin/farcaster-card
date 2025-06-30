@@ -1,6 +1,4 @@
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey as SolanaPublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { Program, AnchorProvider, web3, utils, BN } from '@coral-xyz/anchor';
-import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey as SolanaPublicKey } from '@solana/web3.js';
 import { sdk } from '@farcaster/frame-sdk';
 
 // Solana network configuration
@@ -32,32 +30,6 @@ export interface NFTMetadata {
     verified: boolean;
     share: number;
   }>;
-}
-
-// Function to mint NFT on Solana (simplified version for demo)
-export async function mintSolanaNFT(
-  metadata: NFTMetadata,
-  payerKeypair: Keypair
-): Promise<{ mint: SolanaPublicKey; signature: string }> {
-  try {
-    // For demo purposes, we'll simulate the minting process
-    // In a real implementation, you would use the Anchor program or Metaplex SDK
-    
-    // Generate mint keypair
-    const mintKeypair = generateMintKeypair();
-    
-    // Simulate transaction processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Return mock result
-    return {
-      mint: mintKeypair.publicKey,
-      signature: 'mock_signature_' + Date.now()
-    };
-  } catch (error) {
-    console.error('Error minting Solana NFT:', error);
-    throw new Error(`Failed to mint Solana NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
 }
 
 // Function to get Solana provider from Farcaster SDK
