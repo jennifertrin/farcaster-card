@@ -339,9 +339,7 @@ export default function VirtualCard({
 
       {/* NFT Minting Section */}
       {!error && (
-        <div className="mt-4 space-y-3">
-          <h3 className="text-lg font-semibold text-gray-800 text-center">Mint as NFT</h3>
-          
+        <div className="mt-4 space-y-3">          
           {/* Ethereum Minting */}
           <div className="space-y-2">
             <button
@@ -360,8 +358,16 @@ export default function VirtualCard({
             
             {isSuccess && (
               <div className="p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
-                Ethereum NFT minted successfully! Transaction hash: {hash?.slice(0, 10)}...
-              </div>
+              Base NFT minted successfully!{' '}
+                <a 
+                  href={`https://basescan.org/tx/${hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-green-800"
+                >
+                  View transaction
+                </a>
+            </div>
             )}
           </div>
         </div>
