@@ -1638,7 +1638,7 @@
   resolved "https://registry.npmjs.org/@nomicfoundation/hardhat-toolbox/-/hardhat-toolbox-6.0.0.tgz"
   integrity sha512-3qm3VuDp5xD8UyfhYPPfZHnCc0M/V5yfRSTSDdOuI8DTrmYJkMNW7QrTNGalMCigWn3suBghSw9YcMOyGDJ7Lg==
 
-"@nomicfoundation/hardhat-verify@^2.0.0", "@nomicfoundation/hardhat-verify@^2.0.1":
+"@nomicfoundation/hardhat-verify@^2.0.0", "@nomicfoundation/hardhat-verify@^2.0.1", "@nomicfoundation/hardhat-verify@^2.0.14":
   version "2.0.14"
   resolved "https://registry.npmjs.org/@nomicfoundation/hardhat-verify/-/hardhat-verify-2.0.14.tgz"
   integrity sha512-z3iVF1WYZHzcdMMUuureFpSAfcnlfJbJx3faOnGrOYg6PRTki1Ut9JAuRccnFzMHf1AmTEoSUpWcyvBCoxL5Rg==

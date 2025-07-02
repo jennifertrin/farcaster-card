@@ -20,6 +20,7 @@ export default function VirtualCard({
   memberName = "Member",
   error = false
 }: VirtualCardProps) {
+  console.log('profilePicture', profilePicture);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
